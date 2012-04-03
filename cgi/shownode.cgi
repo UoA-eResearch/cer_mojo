@@ -17,10 +17,7 @@ failure = False
 # make sure we have a nodename here
 def valid_nodename(form):
     trtable = string.maketrans(string.lowercase, string.lowercase)
-    return form.has_key('nodename') and \
-           len(form['nodename'].value) < 50 and \
-           (form['nodename'].value.startswith('compute-') or \
-            form['nodename'].value.startswith('gpu-'))
+    return form.has_key('nodename') and len(form['nodename'].value) < 50 
 
 # read header from file
 f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
