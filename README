@@ -9,8 +9,8 @@ It consists of
 
 * An LRM-agnostic web interface (CGI scripts, JavaScript files,
   CSS stylesheets)
-* An LRM-specific Python package to get information about jobs
-  Pre-defined LRMs: 
+* LRM-specific Python packages to get information about jobs.
+  Pre-defined packages exist for the folloing LRMs: 
    - PBS/Maui
    - LoadLeveler
   For each supported LRM a package exists in the directory
