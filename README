@@ -1,0 +1,80 @@
+Overview
+========
+
+This project helps to display job and queue information of jobs 
+managed by a Local Resource Manager (LRM) like PBS or LoadLeveler 
+in a web-based format.
+
+It consists of
+ * An LRM-agnostic web interface and
+ * A Python package to communicate with an LRM 
+
+Pre-defined LRMs: 
+ * PBS/Maui
+ * LoadLeveler
+
+For each supported LRM a package exists which contains
+modules conforming to a well defined interface.
+Support for additional LRMs could be added by adding a package
+and configure it as the default LRM.
+
+The information about jobs is gathered by extracting text from the
+output of LRM commands.
+
+
+Installation Instructions
+=========================
+
+1. Configure Python package "cluster"
+
+ Configure the package
+   Configure the LRM in the configuration files 
+   * python/cluster/cluster/config.py
+   * python/cluster/cluster/monitoring/<SCHEDULER>/config.py
+
+   python/cluster/cluster/config.py:
+    * Set the value of 'default_scheduler' to a package
+      in python/cluster/cluster/monitoring/. Pre-defined
+      and supported LRMs are 'pbs' and 'loadleveler'
+    * Set the value of 'main_ganglia_page' to your ganglia
+      website
+
+   python/cluster/cluster/monitoring/<SCHEDULER>/config.py
+    * Set the paths to the scheduler commands
+    * If certain cluster nodes shouldn't be listed, add them
+      to the array 'node_blacklist'
+
+2. Install Python package "cluster"
+
+   * cd python/cluster
+   * python setup.py install
+
+3. Install the JavaScript files and CSS stylesheets
+
+ The JavaScript files and CSS stylesheets are expected
+ to be located in the directory 'jobs' of the webservers
+ base website directory (document root).
+ (The following commands use ${DOCUMENT_ROOT} as the base
+  website directory)
+
+   mkdir -p ${DOCUMENT_ROOT}/jobs/js 
+   mkdir -p ${DOCUMENT_ROOT}/jobs/style
+   cp -r style/* ${DOCUMENT_ROOT}/jobs/style/
+   cp -r js/* ${DOCUMENT_ROOT}/jobs/js/
+
+ If the location for JavaScript and CSS files needs to be
+ different from /jobs, the paths to JavaScript and CSS files
+ must be adjusted in the scripts in the directory "cgi"
+  
+4. Install the CGI scripts
+
+ Copy the scripts in cgi/ into the cgi-bin directory
+ of the webserver
+ 
+
+Supported Python Versions
+=========================
+
+Tested with Python 2.4. Will probably work with all newer
+versions of Python.
+
