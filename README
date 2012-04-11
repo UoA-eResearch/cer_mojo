@@ -6,20 +6,21 @@ managed by a Local Resource Manager (LRM) like PBS or LoadLeveler
 in a web-based format.
 
 It consists of
- * An LRM-agnostic web interface and
- * A Python package to communicate with an LRM 
 
-Pre-defined LRMs: 
- * PBS/Maui
- * LoadLeveler
-
-For each supported LRM a package exists which contains
-modules conforming to a well defined interface.
-Support for additional LRMs could be added by adding a package
-and configure it as the default LRM.
-
-The information about jobs is gathered by extracting text from the
-output of LRM commands.
+* An LRM-agnostic web interface (CGI scripts, JavaScript files,
+  CSS stylesheets)
+* An LRM-specific Python package to get information about jobs
+  Pre-defined LRMs: 
+   - PBS/Maui
+   - LoadLeveler
+  For each supported LRM a package exists in the directory
+  'python/cluster/cluster/monitoring/', which contains modules
+  conforming to a well defined interface.
+  Support for additional LRMs can be added by providing a package
+  for the LRM in 'python/cluster/cluster/monitoring/' and configure
+  it as the default LRM.
+  Information about jobs is gathered by extracting text from the
+  output of LRM commands.
 
 
 Installation Instructions
