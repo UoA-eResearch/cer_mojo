@@ -1,14 +1,14 @@
 Overview
 ========
 
-This project helps to display job and queue information of jobs 
-managed by a Local Resource Manager (LRM) like PBS or LoadLeveler 
-in a web-based format.
+Display information about jobs managed by a Local Resource Manager (LRM)
+like PBS or LoadLeveler in a web-based format.
 
-It consists of
+The project consists of
 
-* An LRM-agnostic web interface (CGI scripts, JavaScript files,
-  CSS stylesheets)
+* An LRM-agnostic web interface (CGI scripts, JavaScript files, CSS
+  stylesheets)
+
 * LRM-specific Python packages to get information about jobs.
   Pre-defined packages exist for the folloing LRMs: 
    - PBS/Maui
@@ -47,8 +47,8 @@ Installation Instructions
 
 2. Install Python package "cluster"
 
-   * cd python/cluster
-   * python setup.py install
+   $ cd python/cluster
+   $ python setup.py install
 
 3. Install the JavaScript files and CSS stylesheets
 
