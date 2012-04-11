@@ -58,10 +58,10 @@ Installation Instructions
  (The following commands use ${DOCUMENT_ROOT} as the base
   website directory)
 
-   mkdir -p ${DOCUMENT_ROOT}/jobs/js 
-   mkdir -p ${DOCUMENT_ROOT}/jobs/style
-   cp -r style/* ${DOCUMENT_ROOT}/jobs/style/
-   cp -r js/* ${DOCUMENT_ROOT}/jobs/js/
+   $ mkdir -p ${DOCUMENT_ROOT}/jobs/js 
+   $ mkdir -p ${DOCUMENT_ROOT}/jobs/style
+   $ cp -r style/* ${DOCUMENT_ROOT}/jobs/style/
+   $ cp -r js/* ${DOCUMENT_ROOT}/jobs/js/
 
  If the location for JavaScript and CSS files needs to be
  different from /jobs, the paths to JavaScript and CSS files
@@ -78,4 +78,20 @@ Supported Python Versions
 
 Tested with Python 2.4. Will probably work with all newer
 versions of Python.
+
+
+Run tests
+=========
+
+This project doesn't contain an extensive test suite, but
+a few test-cases exist for important utility functions used
+by the LRM-specific Python packages.
+
+Prerequisites for running the tests:
+ * Install 'nose'
+
+Run the tests:
+
+ $ cd python/cluster
+ $ nosetests
 
