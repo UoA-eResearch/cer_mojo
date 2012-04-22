@@ -1,3 +1,4 @@
+* Create RESTful interface
 * Make walltime format homogeneous: h:m:s or d+h:m:s but not mix of both
 * Be more precise with what version of LL and PBS/Maui this stuff works with?
 * make document root configurable. should be easier to store js and css files
