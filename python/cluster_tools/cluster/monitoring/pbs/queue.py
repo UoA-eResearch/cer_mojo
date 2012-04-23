@@ -68,7 +68,7 @@ class Queue:
   def get_jobs(self, user=''):
     ''' Get lists of active, idle and blocked jobs '''
     jobs = {}
-    jobs['active_jobs'] = self.get_active_jobs()
-    jobs['idle_jobs'] = self.get_idle_jobs()
-    jobs['blocked_jobs'] = self.get_blocked_jobs()
+    jobs['active_jobs'] = self.get_active_jobs(user)
+    jobs['idle_jobs'] = self.get_idle_jobs(user)
+    jobs['blocked_jobs'] = self.get_blocked_jobs(user)
     return jobs
