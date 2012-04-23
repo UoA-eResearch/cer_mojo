@@ -27,7 +27,7 @@ def extract(string, sub1=None, sub2=None):
   return retval.strip()
 
 def strip_multiple_ws(string):
-  ''' Return a copy of string where multiple occurences of whitespaces is replaced with a single blank '''
+  ''' Return a copy of string where multiple occurences of whitespaces are replaced with a single space '''
   if string is None:
     raise Exception('Cannot process None')
   return re.sub('\s+' , ' ', string)
