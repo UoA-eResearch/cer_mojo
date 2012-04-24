@@ -76,8 +76,11 @@ class Node:
     if self._avail_mem_gb is None:
       req_mem_gb=0.0
       for jobid in self.get_job_ids():
-        job = LLJob(jobid)
-        req_mem_gb = req_mem_gb + float(job.get_execution_nodes()[self._nodename]['mem'])
+        try:
+          job = LLJob(jobid)
+          req_mem_gb = req_mem_gb + float(job.get_execution_nodes()[self._nodename]['mem'])
+        except:
+          pass
       self._avail_mem_gb = (self.get_phys_mem_gb() - req_mem_gb)
     return self._avail_mem_gb
 
