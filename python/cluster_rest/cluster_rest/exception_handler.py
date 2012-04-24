@@ -13,8 +13,7 @@ class ExceptionHandler(object):
     try:
       return self.app(environ, start_response)
     except:
-      error_dict = {}
-      error_dict['error'] = {}
+      error_dict = {'error':{}}
       error_dict['error']['message'] = str(sys.exc_info()[1])
       error_dict['error']['stacktrace'] = traceback.format_exc()
       body = simplejson.dumps(error_dict)
