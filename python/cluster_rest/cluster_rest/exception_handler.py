@@ -1,8 +1,6 @@
 import sys
 import traceback
 import simplejson
-from pyramid.httpexceptions import HTTPInternalServerError
-from pyramid.response import Response
 
 class ExceptionHandler(object):
 
