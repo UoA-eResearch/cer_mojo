@@ -1,6 +1,6 @@
 import cluster.monitoring.pbs.node
 
-# Configuration data for the node
+#  Data to be used by the node
 data = {}
 
 # Fake a PBS node. Information about the node is not fetched from local

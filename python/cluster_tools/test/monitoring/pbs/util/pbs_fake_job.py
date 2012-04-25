@@ -1,6 +1,6 @@
 import cluster.monitoring.pbs.job
 
-# Configuration data for the job.
+#  Data to be used by the job
 data = {}
 
 # Fake a PBS job. Information about the job is not fetched from local
