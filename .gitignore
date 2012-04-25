@@ -1,4 +1,7 @@
+# Eclipse and PyDev files
 .DS_Store
 .project
 .pydevproject
+
+# Compiled Python code
 *.pyc
