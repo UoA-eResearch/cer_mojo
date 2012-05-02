@@ -101,14 +101,17 @@ class Job:
       exp = '(Per Node)'
     else:
       mem = extract(self._llq_output, '   Resources:','\n')
-    mem = extract(mem, 'ConsumableMemory(', ') ')
-    val = float(mem[0:-2])
-    unit = mem[-2:len(mem)]
-    if unit.lower() == 'mb':
-      val = float(val)/1024
-    elif unit.lower() == 'kb':
-      val = float(val)/(1024*1024)
-    return '%.3f %s' % (val,exp)
+    mem = extract(mem, 'ConsumableMemory(', ')')
+    if mem == '':
+      return 'N/A'
+    else:
+      val = float(mem[0:-2])
+      unit = mem[-2:len(mem)]
+      if unit.lower() == 'mb':
+        val = float(val)/1024
+      elif unit.lower() == 'kb':
+        val = float(val)/(1024*1024)
+      return '%.3f %s' % (val,exp)
     
   def get_req_vmem_gb(self):
     ''' Get requested virtual memory '''
@@ -119,13 +122,16 @@ class Job:
     else:
       mem = extract(self._llq_output, '   Resources:','\n')
     mem = extract(mem, 'ConsumableVirtualMemory(', ')')
-    val = float(mem[0:-2])
-    unit = mem[-2:len(mem)]
-    if unit.lower() == 'mb':
-      val = float(val)/1024
-    elif unit.lower() == 'kb':
-      val = float(val)/(1024*1024)
-    return '%.3f %s' % (val,exp)
+    if mem == '':
+      return 'N/A'
+    else:
+      val = float(mem[0:-2])
+      unit = mem[-2:len(mem)]
+      if unit.lower() == 'mb':
+        val = float(val)/1024
+      elif unit.lower() == 'kb':
+        val = float(val)/(1024*1024)
+      return '%.3f %s' % (val,exp)
 
   def get_used_mem_gb(self):
     ''' Get used memory '''
