@@ -159,7 +159,8 @@ class Job:
     else:
       machine = {}
       machine['cores'] = self.get_req_cores()
-      machine['mem'] = self.get_req_mem_gb().replace('(Per Node)','')
+      # TODO: Make difference between per-node and per-task!!!!!
+      machine['mem'] = self.get_req_mem_gb().replace('(Per Node)','').replace('(Per Task)','')
       hosts[ah] = machine
     return hosts
 
