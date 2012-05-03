@@ -50,6 +50,13 @@ class Job:
     ''' Get user '''
     return extract(self._checkjob_output, 'user:', 'group:')
 
+  def get_job_directory(self):
+    ''' Get job directory '''
+    output_path = extract(self._qstat_output, 'Output_Path = ', '\n')
+    if ":" in output_path:
+      output_path = extract(output_path, ':')
+    return os.path.dirname(output_path)
+
   def get_req_cores(self):
     ''' Get number of requested cpu cores'''
     return int(extract(self._checkjob_output, 'TaskCount:', 'Partition:'))
@@ -163,6 +170,7 @@ class Job:
     job['status'] = self.get_status()
     job['queue'] = self.get_queue()
     job['user'] = self.get_user()
+    job['job_directory'] = self.get_job_directory()
     job['req_cores'] = self.get_req_cores()
     job['req_walltime'] = self.get_req_walltime()
     job['req_mem_gb'] = self.get_req_mem_gb()

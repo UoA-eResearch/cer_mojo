@@ -1,4 +1,4 @@
-import re, os, time, datetime
+import time
 import cluster.util.system_call as syscall
 import cluster.monitoring.loadleveler.config as config
 import cluster.util.timeutil as timeutil
@@ -42,6 +42,10 @@ class Job:
   def get_user(self):
     ''' Get user '''
     return extract(self._llq_output, 'Owner:', '\n')
+
+  def get_job_directory(self):
+    ''' Get job directory '''
+    return extract(self._llq_output, 'Initial Working Dir:', '\n')
 
   def get_req_cores(self):
     ''' Get number of requested cpu cores'''
@@ -177,6 +181,7 @@ class Job:
     job['status'] = self.get_status()
     job['queue'] = self.get_queue()
     job['user'] = self.get_user()
+    job['job_directory'] = self.get_job_directory()
     job['req_cores'] = self.get_req_cores()
     job['req_walltime'] = self.get_req_walltime()
     job['req_mem_gb'] = self.get_req_mem_gb()
