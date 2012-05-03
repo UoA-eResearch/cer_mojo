@@ -33,6 +33,7 @@ try:
     info += "<table>"
     info += "<tr><td><b>Status</b>:</td><td>%s</td></tr>" % job['status']
     info += "<tr><td><b>User</b>:</td><td>%s</td></tr>" % job['user']
+    info += "<tr><td><b>Job Directory</b>:</td><td>%s</td></tr>" % job['job_directory']
     info += "<tr><td><b>Queue</b>:</td><td>%s</td></tr>" % job['queue']
     info += "<tr><td><b>Requested CPU Cores</b>:</td><td>%s</td></tr>" % job['req_cores']
     info += "<tr><td><b>Requested Memory [GB]</b>:</td><td>%s</td></tr>" % job['req_mem_gb']
