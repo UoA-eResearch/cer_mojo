@@ -7,4 +7,4 @@ llstatus = "/usr/bin/llstatus"
 llq = "/usr/bin/llq"
 
 # nodes to exclude from the list of nodes
-node_blacklist=['pandora.nesi.org.nz','login1-p']
+node_blacklist=['pan.nesi.org.nz','login1-p']
