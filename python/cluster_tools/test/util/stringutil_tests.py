@@ -18,6 +18,9 @@ class StringutilTests(unittest.TestCase):
 
     expected = 'value'
     assert expected == extract('test(value) test2(value2)', 'test(', ')')
+
+    expected = 'value'
+    assert expected == extract('test:value', ':')
   
     expected = '''Task
 ----'''
