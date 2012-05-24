@@ -45,7 +45,7 @@ try:
   info += f.read() % config.main_ganglia_page
   f.close()
 
-  info += '<h3>Summary of jobs</h3>'
+  info += '<h2>Summary of jobs</h2>'
   info += '<table>'
   info += '<tr><td><b>Total number of jobs</b>:</td><td>%d</td></tr>' % (len(active_jobs) + len(idle_jobs) + len(blocked_jobs))
   info += '<tr><td><b>Running jobs</b>:</td><td>%d</td></tr>' % len(active_jobs)
