@@ -73,4 +73,4 @@ print '''Content-Type: text/html
 
 print info
 
-print "</html></body>"
+print "</div></body></html>"

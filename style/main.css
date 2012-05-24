@@ -1,10 +1,9 @@
-div#header { background-color: lightgrey; padding: 5px }
-a:link { text-decoration: none }
-a.summary { font-weight: bold; color: black }
-a.runningjobs { font-weight: bold; color: green }
-a.queuedjobs { font-weight: bold; color: #FF9900 }
-a.blockedjobs { font-weight: bold; color: red }
-a.nodeoverview { font-weight: bold; color: black }
-a.useroverview { font-weight: bold; color: black }
-a.gangliamain { font-weight: bold; color: black }
-td { vertical-align: top }
+div#header {color: white; background-color: #333; padding: 8px; position: absolute; top: 0; left: 0; right: 0; height: 15pt; }
+div#body {background-color: white; padding: 8px; position: absolute; top: 25pt; left: 0; right: 0; }
+a:link {text-decoration: none;}
+a.white {font-weight:bold; color: white}
+a.runningjobs {font-weight:bold; color: green}
+a.queuedjobs {font-weight:bold; color: #FF9900}
+a.blockedjobs {font-weight:bold; color: red}
+td {vertical-align:top}
+

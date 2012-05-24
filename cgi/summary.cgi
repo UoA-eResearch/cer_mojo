@@ -94,4 +94,5 @@ print '''Content-Type: text/html
     <body>'''
 
 print info
-print '</body></html>'
+
+print "</div></body></html>"

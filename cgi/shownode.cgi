@@ -129,5 +129,4 @@ print '''
 
 print info
 
-print "</body>"
-print "</html>"
+print "</div></body></html>"
