@@ -42,7 +42,7 @@ try:
 
   # read header from file
   f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
-  info += f.read() % config.main_ganglia_page
+  info += f.read() % config.ganglia_main_page
   f.close()
 
   info += '<h2>Summary of jobs</h2>'

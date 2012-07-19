@@ -21,7 +21,7 @@ def valid_nodename(form):
 
 # read header from file
 f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
-info += f.read() % config.main_ganglia_page
+info += f.read() % config.ganglia_main_page
 f.close()
 
 if valid_nodename(form):
