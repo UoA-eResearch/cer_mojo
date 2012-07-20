@@ -77,7 +77,7 @@ class Node:
   def get_cores(self):
     ''' Get number of CPU cores '''
     if self._cores is None:
-      self._cores = int(extract(self._node_listing, 'np = ', 'properties'))
+      self._cores = int(extract(self._node_listing, 'np = ', '\n'))
     return self._cores
 
   def get_avail_cores(self):
