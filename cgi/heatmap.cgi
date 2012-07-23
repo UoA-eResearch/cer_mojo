@@ -83,8 +83,8 @@ try:
 
   info += '</tr></table></td><td>'
   info += 'This map gives an overview of the cluster utilization.<br>Each square represents a cluster machine.<br>'
-  info += 'The color of a square represents a combination of CPU and memory utilization (Euclidian metric of the '
-  info += 'number of CPU cores in use and the memory in use). The color encoding is'
+  info += 'The color of a square represents a combination of system load and memory utilization (Euclidian metric of '
+  info += 'system load and the memory in use). The color encoding is'
   info += '<ul><li>white == no/low utilization</li><li>red == high utilization</li></ul>'
   info += 'Note that this map represents the real utilization, and not the requested/scheduled utilisation. '
   info += 'If there is only one serial job running that requested all memory of a machine, but in fact the job '
