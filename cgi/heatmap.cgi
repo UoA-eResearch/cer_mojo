@@ -18,6 +18,8 @@ info = ''
 
 colormap = [ '#ffffff', '#ffe6e5', '#ffcdcd', '#ffb4b4', '#ff9b9b', '#ff8282', '#ff6969', '#ff5050', '#ff3737', '#ff1e1e', '#ff0000', '#c40606' ]
 
+reload_interval_ms = 60000
+
 # Parsing handler for SAX events 
 class MyHandler(xml.sax.ContentHandler):
   hostdict = {}
@@ -34,10 +36,16 @@ class MyHandler(xml.sax.ContentHandler):
         self.hostdict[self.hosttmp][attrname] = attrs.getValue("VAL")
 
 try:
-  # read header from file
-  f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
-  info += f.read() % config.ganglia_main_page
-  f.close()
+
+  mode = ''
+  if form.has_key('mode') and form['mode'].value == 'naked':
+    mode = form['mode'].value
+   
+  if mode != 'naked':
+    # read header from file
+    f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
+    info += f.read() % config.ganglia_main_page
+    f.close()
 
   # get all information in XML format from ganglia gmetad via netcat
   (stdout,stderr,rc) = systemcall.execute("nc %s %s" % (config.ganglia_gmetad_host, config.ganglia_gmetad_port))
@@ -56,7 +64,9 @@ try:
     numrows += 1
 
   # print information
-  info += '<table cellpadding="10"><tr><td>'
+  if mode != "naked":
+    info += '<table cellpadding="10"><tr><td>'
+
   info += '<table class="heatmap">'
   colcount = 0
   for host in hostlist:
@@ -81,17 +91,20 @@ try:
     info += '<td>&nbsp;</td>'
     colcount += 1
 
-  info += '</tr></table></td><td>'
-  info += 'This map gives an overview of the cluster utilization.<br>Each square represents a cluster machine.<br>'
-  info += 'The color of a square represents a combination of system load and memory utilization (Euclidian metric of '
-  info += 'system load and the memory in use). The color encoding is'
-  info += '<ul><li>white == no/low utilization</li><li>red == high utilization</li></ul>'
-  info += 'Note that this map represents the real utilization, and not the requested/scheduled utilisation. '
-  info += 'If there is only one serial job running that requested all memory of a machine, but in fact the job '
-  info += ' uses only a very small amount of memory, then the color of that machine will be rather white<br><br>'
-  info += 'Mouse over the squares to get more details about the machine.'
-  info += '</td></tr></table>'
-  
+  if mode == "naked":
+    info += "</tr></table>"
+  else:
+    info += '</tr></table></td><td>'
+    info += 'This map gives an overview of the cluster utilization.<br>Each square represents a cluster machine.<br>'
+    info += 'The color of a square represents a combination of system load and memory utilization (Euclidian metric of '
+    info += 'system load and the memory in use). The color encoding is'
+    info += '<ul><li>white == no/low utilization</li><li>red == high utilization</li></ul>'
+    info += 'Note that this map represents the real utilization, and not the requested/scheduled utilisation. '
+    info += 'If there is only one serial job running that requested all memory of a machine, but in fact the job '
+    info += ' uses only a very small amount of memory, then the color of that machine will be rather white<br><br>'
+    info += 'Mouse over the squares to get more details about the machine.'
+    info += '</td></tr></table>'
+ 
 except:
   info += "Failed to create heatmap:<br><pre>%s</pre>" % traceback.format_exc()
 
@@ -106,8 +119,14 @@ print '''Content-Type: text/html
       table.heatmap, th.heatmap, td.heatmap { border: 3px solid black; background-color:#444444; }
       td.heatmap { padding: 0px; }
     </style>
+    <script type="text/javascript">
+      function refresh() {
+        window.location.reload(true);
+      }
+      setTimeout(refresh, %s);
+   </script>
   </head>
-  <body>'''
+  <body>''' % reload_interval_ms
 
 print info
 
