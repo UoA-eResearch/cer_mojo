@@ -38,16 +38,19 @@ class MyHandler(xml.sax.ContentHandler):
 try:
 
   mode = ''
-  showmem = True
-  showcpu = True
+  showcpumem = False
+  showcpu = False
+  showmem = False
   if form.has_key('mode') and form['mode'].value == 'naked':
     mode = form['mode'].value
-  if form.has_key('showmem') and form['showmem'].value == 'false':
-    showmem = False
-  if form.has_key('showcpu') and form['showcpu'].value == 'false':
-    showcpu = False
+  if form.has_key('show'):
+    if form['show'].value == 'cpumem':
+      showcpumem = True
+    elif form['show'].value == 'cpu':
+      showcpu = True
+    elif form['show'].value == 'mem':
+      showmem = True
 
-   
   if mode != 'naked':
     # read header from file
     f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
@@ -71,18 +74,24 @@ try:
     numrows += 1
 
   # print information
-  cpu_checked = ''
-  mem_checked = ''
+  cpumem_selected = ''
+  cpu_selected = ''
+  mem_selected = ''
   if showcpu:
-    cpu_checked = 'checked'
-  if showmem:
-    mem_checked = 'checked'
-
-  info += '''<form id='checker'>
-      <input type="checkbox" name="showcpu" onClick="reload(this.form)" %s>Show System Load
-      <input type="checkbox" name="showmem" onClick="reload(this.form)" %s>Show Memory Utilization
-    </form>''' % (cpu_checked, mem_checked);
-     
+    cpu_selected = 'selected="selected"'
+  elif showmem:
+    mem_selected = 'selected="selected"'
+  else:
+    cpumem_selected = 'selected="selected"'
+    
+  info += '''<form id='myform'>
+      <select id="checker" onChange="reload()">
+        <option value="cpumem" %s>Show system load and memory utilization</option>
+        <option value="cpu" %s>Show system load only</option>
+        <option value="mem" %s>Show memory utilization only</option>
+      </select>
+    </form>''' % (cpumem_selected, cpu_selected, mem_selected)
+    
   if mode != "naked":
     info += '<table cellpadding="10"><tr><td>'
 
@@ -99,12 +108,10 @@ try:
     cpu_usage = float(values['load_one']) / int(values['cpu_num']) 
     mem_usage = (float(values['mem_total']) - int(values['mem_free'])) / int(values['mem_total'])
     
-    if not showmem and not showcpu:
-      color_index = 0
-    elif showmem and not showcpu:
-      color_index = int(round(mem_usage * 10))
-    elif showcpu and not showmem:
+    if showcpu:
       color_index = int(round(cpu_usage * 10))
+    elif showmem:
+      color_index = int(round(mem_usage * 10))
     else:
       # create euclidian distance of cpu_usage and mem_usage to get the color_index
       color_index = int(round(math.sqrt(cpu_usage * cpu_usage + mem_usage * mem_usage) * 10))
@@ -147,28 +154,21 @@ print '''Content-Type: text/html
       td.heatmap { padding: 0px; }
     </style>
     <script type="text/javascript">
-      function reload(myform) {
+      function reload() {
         var have_qs = window.location.href.indexOf("?");
         var mode = (window.location.href.indexOf("mode=naked") > -1) ? "naked" : "";
         var url = (have_qs===-1) ? window.location.href : window.location.href.substr(0,have_qs);
-        if (!(myform.showcpu.checked)) {
-          url += '?showcpu=false';
-        }
-        if (!myform.showmem.checked) {
-          if (url.indexOf("?") === -1) {
-            url += "?";
-          } else {
-            url += "&";
-          }
-          url += 'showmem=false';
+        var myselect = document.getElementById("checker");
+        var selected_val = myselect.options[myselect.selectedIndex].value;
+        if (selected_val == "cpu") {
+          url += '?show=cpu';
+        } else if (selected_val == "mem") {
+          url += '?show=mem';
+        } else {
+          url += '?show=cpumem';        
         }
         if (mode == 'naked') {
-          if (url.indexOf("?") === -1) {
-            url += "?";
-          } else {
-            url += "&";
-          }
-          url += "mode=naked";
+          url += "&mode=naked";
         }
         window.location.href = url;
       }
