@@ -38,6 +38,7 @@ class MyHandler(xml.sax.ContentHandler):
 try:
 
   mode = ''
+  error = False
   showcpumem = False
   showcpu = False
   showmem = False
@@ -104,9 +105,15 @@ try:
       info += '</tr><tr>'
     
     values = handler.hostdict[host] 
-    tooltip = "Host: %s\nCPU cores: %s\nCurrent Load: %s\nMem total: %s\nMem free: %s" % (host, values['cpu_num'], values['load_one'], values['mem_total'], values['mem_free'])
-    cpu_usage = float(values['load_one']) / int(values['cpu_num']) 
-    mem_usage = (float(values['mem_total']) - int(values['mem_free'])) / int(values['mem_total'])
+    try:
+      tooltip = "Host: %s\nCPU cores: %s\nCurrent Load: %s\nMem total: %s\nMem free: %s" % (host, values['cpu_num'], values['load_one'], values['mem_total'], values['mem_free'])
+      cpu_usage = float(values['load_one']) / int(values['cpu_num']) 
+      mem_usage = (float(values['mem_total']) - int(values['mem_free'])) / int(values['mem_total'])
+    except KeyError:
+      error = True
+      tooltip = "Host: %s\n(Error gathering metrics)" % host
+      cpu_usage = 0
+      mem_usage = 0
     
     if showcpu:
       color_index = int(round(cpu_usage * 10))
@@ -126,10 +133,9 @@ try:
     info += '<td>&nbsp;</td>'
     colcount += 1
 
-  if mode == "naked":
-    info += "</tr></table>"
-  else:
-    info += '</tr></table></td><td>'
+  info += '</tr></table>'
+  if mode != 'naked':
+    info += '</td><td>'
     info += 'This map gives an overview of the cluster utilization.<br>Each square represents a cluster machine.<br>'
     info += 'The color of a square represents the utilization of a cluster machine. '
     info += 'If you show both system load and memory utilization the euclidian metric of both values is used.<br>' 
@@ -138,6 +144,9 @@ try:
     info += 'Note that this map represents the real utilization, and not the requested/scheduled utilisation.<br><br>'
     info += 'Mouse over the squares to get more details about the machine.'
     info += '</td></tr></table>'
+
+  if error:
+    info += "<font color='red'><b>There was an error gathering information from Ganglia. The information in the heatmap is incomplete</b></font>"
  
 except:
   info += "Failed to create heatmap:<br><pre>%s</pre>" % traceback.format_exc()
