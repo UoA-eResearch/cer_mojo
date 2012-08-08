@@ -109,7 +109,7 @@ else:
   # get cluster node list and display as modal
   node_list = factory.create_nodes_instance().get_node_list()
   string = '<b>Pick a node</b><hr><table width="100%"><tr><td valign="top">'
-  maxrows = 15
+  maxrows = 22
   colcount = 0
   for node in node_list:
     if colcount % maxrows == 0 and colcount != 0:
