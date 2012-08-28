@@ -135,15 +135,15 @@ try:
 
   info += '</tr></table>'
   if mode != 'naked':
-    info += '</td><td>'
-    info += 'This map gives an overview of the cluster utilization.<br>Each square represents a cluster machine.<br>'
-    info += 'The color of a square represents the utilization of a cluster machine. '
-    info += 'If you show both system load and memory utilization the euclidian metric of both values is used.<br>' 
-    info += 'The color encoding is'
-    info += '<ul><li>white == no/low utilization</li><li>red == high utilization</li></ul>'
-    info += 'Note that this map represents the real utilization, and not the requested/scheduled utilisation.<br><br>'
-    info += 'Mouse over the squares to get more details about the machine.'
-    info += '</td></tr></table>'
+    info += '''</td><td>
+      This map gives an overview of the cluster utilization.<br>Each square represents a cluster machine.<br>
+      The color of a square represents the utilization of a cluster machine.
+      If you show both system load and memory utilization the euclidian metric of both values is used.<br> 
+      The color encoding is
+      <ul><li>white == no/low utilization</li><li>red == high utilization</li></ul>
+      Note that this map represents the real utilization, and not the requested/scheduled utilisation.<br><br>
+      Mouse over the squares to get more details about the machine.
+      </td></tr></table>'''
 
   if error:
     info += "<font color='red'><b>There was an error gathering information from Ganglia. The information in the heatmap is incomplete</b></font>"
