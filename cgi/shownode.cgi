@@ -182,6 +182,11 @@ print '''Content-Type: text/html
     <script type="text/javascript" src="/jobs/js/jquery.tablesorter.min.js"></script>
     <script type="text/javascript" src="/jobs/js/jquery.blockUI.2.39.js"></script>
     <script type="text/javascript">
+    
+      function reloadWithNode(nodename) {
+        location.href='./shownode.cgi?nodename=' + nodename;
+      }
+    
       $(document).ready(function() {
 '''
 
@@ -191,9 +196,9 @@ if not failure:
 else:
   # get cluster node list and display as modal
   node_list = factory.create_nodes_instance().get_node_list()
-  string = '<b>Pick a node</b>: <select>'
+  string = '<b>Pick a node</b>: <select onchange="reloadWithNode(this.value)">'
   for node in node_list:
-    string += '''<option onclick="location.href=\\'./shownode.cgi?nodename=%s\\'">%s</option>''' % (node, node)
+    string += '<option value="%s">%s</option>' % (node, node)
   string += '</select>'  
   print "var str = '%s';" % string
   print "$.blockUI({ message: str });"  
