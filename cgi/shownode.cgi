@@ -196,7 +196,7 @@ if not failure:
 else:
   # get cluster node list and display as modal
   node_list = factory.create_nodes_instance().get_node_list()
-  string = '<b>Pick a node</b>: <select onchange="reloadWithNode(this.value)">'
+  string = '<b>Pick a node</b>: <select onchange="reloadWithNode(this.value)"><option value=""></option>'
   for node in node_list:
     string += '<option value="%s">%s</option>' % (node, node)
   string += '</select>'  
