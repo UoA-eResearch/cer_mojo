@@ -31,7 +31,7 @@ class Queue:
           else: 
             # probably more than one core requested
             node = extract(ll_job, 'Allocated Hosts :', '\n')
-            job['node'] = node.replace('::','')
+            job['node'] = extract(node, None, '::')
             tmp = extract(ll_job, 'Task\n----\n')
             job['cores'] = extract(tmp, 'Num Task Inst:', '\n')
           # format: Tue 20 Mar 2012 02:49:00 PM NZDT

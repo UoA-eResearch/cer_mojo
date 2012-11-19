@@ -1,4 +1,4 @@
-import re, os
+import re
 import cluster.util.system_call as syscall
 import cluster.monitoring.loadleveler.config as config
 from cluster.util.stringutil import extract
@@ -6,6 +6,9 @@ from cluster.monitoring.loadleveler.job import Job as LLJob
 
 class Nodes:
 
+  def __init__(self):
+    pass
+  
   def get_node_list(self):
     ''' Get a list of all cluster nodes '''
     node_list = list()
@@ -94,7 +97,9 @@ class Node:
       used_cores=0
       for jobid in self.get_job_ids():
         job = LLJob(jobid)
-        used_cores += int(job.get_execution_nodes()[self._nodename]['cores'])
+        nodes = job.get_execution_nodes()
+        if self._nodename in nodes:
+          used_cores += int(nodes[self._nodename]['cores'])
       self._avail_cores = (self.get_cores() - used_cores)
     return self._avail_cores
         
