@@ -30,7 +30,7 @@ class Queue:
             job['cores'] = 1
           else: 
             # probably more than one core requested
-            node = extract(ll_job, 'Allocated Hosts :', '\n')
+            node = extract(ll_job, 'Allocated Hosts :', 'Master Task')
             job['node'] = extract(node, None, '::')
             tmp = extract(ll_job, 'Task\n----\n')
             job['cores'] = extract(tmp, 'Num Task Inst:', '\n')
