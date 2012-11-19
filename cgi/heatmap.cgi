@@ -126,7 +126,7 @@ try:
     if color_index > 10:
       color_index = 11
       
-    info += '<td class="heatmap"><div title="%s" style="width:30px; height:30px; float:left; background:%s;"></div></td>' % (tooltip, colormap[color_index])
+    info += '<td class="heatmap"><div onclick="location.href=\'./shownode.cgi?nodename=%s\'" title="%s" style="width:30px; height:30px; float:left; background:%s; cursor: pointer;"></div></td>' % (host, tooltip, colormap[color_index])
     colcount += 1
 
   while colcount < (numcols * numrows):
