@@ -23,14 +23,17 @@ reload_interval_ms = 60000
 # Parsing handler for SAX events 
 class MyHandler(xml.sax.ContentHandler):
   hostdict = {}
+  subnets = ["10.0.102", "10.0.103", "10.0.104", "10.0.111"]
   hosttmp = ''
+  iptmp = ''
 
   def startElement(self, name, attrs):
     if name == "HOST":
       self.hosttmp = attrs.getValue("NAME")
-      if self.hosttmp not in config.ganglia_blacklist:
+      self.iptmp = attrs.getValue("IP")
+      if self.hosttmp not in config.ganglia_blacklist and self.iptmp[0:8] in self.subnets:
         self.hostdict[self.hosttmp] = {}
-    if name == "METRIC":
+    if name == "METRIC" and self.iptmp[0:8] in self.subnets:
       attrname = attrs.getValue("NAME")
       if self.hosttmp in self.hostdict and (attrname == "load_one" or attrname == "mem_free" or attrname == "mem_total" or attrname == "cpu_num"):
         self.hostdict[self.hosttmp][attrname] = attrs.getValue("VAL")
@@ -98,6 +101,7 @@ try:
 
   info += '<table class="heatmap">'
   colcount = 0
+  overloaded_hosts = []
   for host in hostlist:
     if colcount == 0:
       info += '<tr>'
@@ -109,6 +113,8 @@ try:
       tooltip = "Host: %s\nCPU cores: %s\nCurrent Load: %s\nMem total: %s\nMem free: %s" % (host, values['cpu_num'], values['load_one'], values['mem_total'], values['mem_free'])
       cpu_usage = float(values['load_one']) / int(values['cpu_num']) 
       mem_usage = (float(values['mem_total']) - int(values['mem_free'])) / int(values['mem_total'])
+      if float(values['load_one']) > (float(values['cpu_num'])+1):
+        overloaded_hosts.append({ 'node': host, 'load': values['load_one'], 'cpus': values['cpu_num'] })
     except KeyError:
       error = True
       tooltip = "Host: %s\n(Error gathering metrics)" % host
@@ -142,8 +148,23 @@ try:
       The color encoding is
       <ul><li>white == no/low utilization</li><li>red == high utilization</li></ul>
       Note that this map represents the real utilization, and not the requested/scheduled utilisation.<br><br>
-      Mouse over the squares to get more details about the machine.
-      </td></tr></table>'''
+      Mouse over the squares to get more details about the machine.'''
+
+  if overloaded_hosts:
+    info += '<br><br><b>Cluster nodes where SystemLoad > (#CPUcores + 1)</b>:<br>'
+    info += '''<table id="overloaded_nodes_table" class="tablesorter">
+      <thead>
+        <tr>
+          <th>Node</th>
+          <th>Load</th>
+          <th>#CPU cores</th>
+        </tr>
+      </thead>
+      <tbody>'''
+    for node in overloaded_hosts:
+       info += '<tr><td>%s</td><td>%s</td><td>%s</td></tr>' % (node['node'], node['load'], node['cpus'])
+    info += '</tbody></table>'
+  info += '</td></tr></table>'
 
   if error:
     info += "<font color='red'><b>There was an error gathering information from Ganglia. The information in the heatmap is incomplete</b></font>"
@@ -156,13 +177,20 @@ print '''Content-Type: text/html
 
   <html>
   <head>
-    <link rel="stylesheet" href="/jobs/style/main.css" type="text/css" media="print, screen"/>
+     <link rel="stylesheet" href="/jobs/style/tablesorter/blue/style.css" type="text/css" media="print, screen"/>
+     <link rel="stylesheet" href="/jobs/style/main.css" type="text/css" media="print, screen"/>
+     <script type="text/javascript" src="/jobs/js/jquery-1.7.min.js"></script>
+     <script type="text/javascript" src="/jobs/js/jquery.tablesorter.min.js"></script>
     <style type="text/css">
       table.heatmap { border-collapse:collapse; }
       table.heatmap, th.heatmap, td.heatmap { border: 3px solid black; background-color:#444444; }
       td.heatmap { padding: 0px; }
     </style>
     <script type="text/javascript">
+      $(document).ready(function() {
+          $("#overloaded_nodes_table").tablesorter({sortList:[[1,1]], widgets:['zebra']});
+      });
+
       function reload() {
         var have_qs = window.location.href.indexOf("?");
         var mode = (window.location.href.indexOf("mode=naked") > -1) ? "naked" : "";
