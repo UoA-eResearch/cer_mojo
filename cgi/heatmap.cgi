@@ -114,7 +114,7 @@ try:
       cpu_usage = float(values['load_one']) / int(values['cpu_num']) 
       mem_usage = (float(values['mem_total']) - int(values['mem_free'])) / int(values['mem_total'])
       if float(values['load_one']) > (float(values['cpu_num'])+1):
-        overloaded_hosts.append({ 'node': host, 'load': values['load_one'], 'cpus': values['cpu_num'] })
+        overloaded_hosts.append({ 'node': host, 'load': values['load_one'], 'cpus': values['cpu_num'], 'overload': (float(values['load_one']) - float(values['cpu_num'])) })
     except KeyError:
       error = True
       tooltip = "Host: %s\n(Error gathering metrics)" % host
@@ -156,13 +156,14 @@ try:
       <thead>
         <tr>
           <th>Node</th>
+          <th>OverLoad</th>
           <th>Load</th>
           <th>#CPU cores</th>
         </tr>
       </thead>
       <tbody>'''
     for node in overloaded_hosts:
-       info += '<tr><td>%s</td><td>%s</td><td>%s</td></tr>' % (node['node'], node['load'], node['cpus'])
+       info += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>' % (node['node'], node['overload'], node['load'], node['cpus'])
     info += '</tbody></table>'
   info += '</td></tr></table>'
 
