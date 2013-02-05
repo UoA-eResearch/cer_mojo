@@ -26,6 +26,7 @@ class MyHandler(xml.sax.ContentHandler):
   subnets = ["10.0.102", "10.0.103", "10.0.104", "10.0.111"]
   hosttmp = ''
   iptmp = ''
+  threshold = 4
 
   def startElement(self, name, attrs):
     if name == "HOST":
@@ -33,13 +34,17 @@ class MyHandler(xml.sax.ContentHandler):
       self.iptmp = attrs.getValue("IP")
       if self.hosttmp not in config.ganglia_blacklist and self.iptmp[0:8] in self.subnets:
         self.hostdict[self.hosttmp] = {}
+        self.hostdict[self.hosttmp]['num_processes'] = 0
     if name == "METRIC" and self.iptmp[0:8] in self.subnets:
       attrname = attrs.getValue("NAME")
-      if self.hosttmp in self.hostdict and (attrname == "load_one" or attrname == "mem_free" or attrname == "mem_total" or attrname == "cpu_num"):
+      if self.hosttmp in self.hostdict and (attrname == "mem_free" or attrname == "mem_total" or attrname == "cpu_num"):
         self.hostdict[self.hosttmp][attrname] = attrs.getValue("VAL")
+      if "ps-" in attrname:
+        val = attrs.getValue("VAL")
+        percent_cpu = float(re.search('%cpu=(.+?),', val).group(1))
+        self.hostdict[self.hosttmp]['num_processes'] += int(((percent_cpu-self.threshold)/100)+1)
 
 try:
-
   mode = ''
   error = False
   showcpumem = False
@@ -110,11 +115,11 @@ try:
     
     values = handler.hostdict[host] 
     try:
-      tooltip = "Host: %s\nCPU cores: %s\nCurrent Load: %s\nMem total: %s\nMem free: %s" % (host, values['cpu_num'], values['load_one'], values['mem_total'], values['mem_free'])
-      cpu_usage = float(values['load_one']) / int(values['cpu_num']) 
+      tooltip = "Host: %s\nCPU cores: %s\nNumber processes: %s\nMem total: %s\nMem free: %s" % (host, values['cpu_num'], values['num_processes'], values['mem_total'], values['mem_free'])
+      cpu_usage = float(values['num_processes']) / int(values['cpu_num']) 
       mem_usage = (float(values['mem_total']) - int(values['mem_free'])) / int(values['mem_total'])
-      if float(values['load_one']) > (float(values['cpu_num'])+1):
-        overloaded_hosts.append({ 'node': host, 'load': values['load_one'], 'cpus': values['cpu_num'], 'overload': (float(values['load_one']) - float(values['cpu_num'])) })
+      if float(values['num_processes']) > (float(values['cpu_num'])+1):
+        overloaded_hosts.append({ 'node': host, 'numprocs': values['num_processes'], 'cpus': values['cpu_num'], 'overload': (float(values['num_processes']) - float(values['cpu_num'])) })
     except KeyError:
       error = True
       tooltip = "Host: %s\n(Error gathering metrics)" % host
@@ -150,21 +155,21 @@ try:
       Note that this map represents the real utilization, and not the requested/scheduled utilisation.<br><br>
       Mouse over the squares to get more details about the machine.'''
 
-  if overloaded_hosts:
-    info += '<br><br><b>Cluster nodes where SystemLoad > (#CPUcores + 1)</b>:<br>'
-    info += '''<table id="overloaded_nodes_table" class="tablesorter">
-      <thead>
-        <tr>
-          <th>Node</th>
-          <th>OverLoad</th>
-          <th>Load</th>
-          <th>#CPU cores</th>
-        </tr>
-      </thead>
-      <tbody>'''
-    for node in overloaded_hosts:
-       info += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>' % (node['node'], node['overload'], node['load'], node['cpus'])
-    info += '</tbody></table>'
+  #if overloaded_hosts:
+  info += '<br><br><b>Cluster nodes where more processes are running than CPU cores available</b>:<br>'
+  info += '''<table id="overloaded_nodes_table" class="tablesorter">
+    <thead>
+      <tr>
+        <th>Node</th>
+        <th>OverLoad</th>
+        <th>#Processes</th>
+        <th>#CPU cores</th>
+      </tr>
+    </thead>
+    <tbody>'''
+  for node in overloaded_hosts:
+   info += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>' % (node['node'], node['overload'], node['numprocs'], node['cpus'])
+  info += '</tbody></table>'
   info += '</td></tr></table>'
 
   if error:
