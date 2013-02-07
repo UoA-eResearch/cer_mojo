@@ -139,7 +139,8 @@ if valid_nodename(form):
       info += "Click on the jobid for full information about the job.<br>"
 
     # System process information
-    info += "<b>Process information</b>:<br>"
+    info += "<br><b>Process information</b>:<br>"
+    info += "Note: There might be up to 15s delay to sync the processes belonging to a job<br>"
     info += '<table id="processes" class="tablesorter"><thead><tr>'
     info += '<th><span title="%s">PID</span></th>' % tt['pid']
     info += '<th><span title="%s">User</span></th>' % tt['userId']
@@ -213,4 +214,5 @@ print '''
 print info
 
 print "</div></body></html>"
+
 
