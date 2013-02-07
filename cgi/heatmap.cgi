@@ -26,7 +26,9 @@ class MyHandler(xml.sax.ContentHandler):
   subnets = ["10.0.102", "10.0.103", "10.0.104", "10.0.111"]
   hosttmp = ''
   iptmp = ''
-  threshold = 4
+  cpu_usage_threshold = 4
+  weak_processes_lower_threshold = 5
+  weak_processes_upper_threshold = 60
 
   def startElement(self, name, attrs):
     if name == "HOST":
@@ -35,6 +37,7 @@ class MyHandler(xml.sax.ContentHandler):
       if self.hosttmp not in config.ganglia_blacklist and self.iptmp[0:8] in self.subnets:
         self.hostdict[self.hosttmp] = {}
         self.hostdict[self.hosttmp]['num_processes'] = 0
+        self.hostdict[self.hosttmp]['num_weak_processes'] = 0
     if name == "METRIC" and self.iptmp[0:8] in self.subnets:
       attrname = attrs.getValue("NAME")
       if self.hosttmp in self.hostdict and (attrname == "mem_free" or attrname == "mem_total" or attrname == "cpu_num"):
@@ -42,7 +45,9 @@ class MyHandler(xml.sax.ContentHandler):
       if "ps-" in attrname:
         val = attrs.getValue("VAL")
         percent_cpu = float(re.search('%cpu=(.+?),', val).group(1))
-        self.hostdict[self.hosttmp]['num_processes'] += int(((percent_cpu-self.threshold)/100)+1)
+        self.hostdict[self.hosttmp]['num_processes'] += int(((percent_cpu - self.cpu_usage_threshold)/100)+1)
+        if percent_cpu > self.weak_processes_lower_threshold and percent_cpu < self.weak_processes_upper_threshold:
+          self.hostdict[self.hosttmp]['num_weak_processes'] += 1
 
 try:
   mode = ''
@@ -107,6 +112,8 @@ try:
   info += '<table class="heatmap">'
   colcount = 0
   overloaded_hosts = []
+  hosts_with_low_performing_processes = []
+
   for host in hostlist:
     if colcount == 0:
       info += '<tr>'
@@ -122,7 +129,7 @@ try:
         overloaded_hosts.append({ 'node': host, 'numprocs': values['num_processes'], 'cpus': values['cpu_num'], 'overload': (float(values['num_processes']) - float(values['cpu_num'])) })
     except KeyError:
       error = True
-      tooltip = "Host: %s\n(Error gathering metrics)" % host
+      tooltip = "Host: %s\n(Error gathering metrics)" % (host)
       cpu_usage = 0
       mem_usage = 0
     
@@ -155,8 +162,8 @@ try:
       Note that this map represents the real utilization, and not the requested/scheduled utilisation.<br><br>
       Mouse over the squares to get more details about the machine.'''
 
-  #if overloaded_hosts:
-  info += '<br><br><b>Cluster nodes where more processes are running than CPU cores available</b>:<br>'
+  # overloaded_hosts:
+  info += '<br><br><b>Cluster nodes where more processes/threads run than CPU cores available</b>:<br>'
   info += '''<table id="overloaded_nodes_table" class="tablesorter">
     <thead>
       <tr>
@@ -168,9 +175,26 @@ try:
     </thead>
     <tbody>'''
   for node in overloaded_hosts:
-   info += '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>' % (node['node'], node['overload'], node['numprocs'], node['cpus'])
+   info += '<tr><td><a href="./shownode.cgi?nodename=%s">%s</a></td><td>%s</td><td>%s</td><td>%s</td></tr>' % (node['node'], node['node'], node['overload'], node['numprocs'], node['cpus'])
   info += '</tbody></table>'
+
+  # hosts where weak processes run:
+  info += '<br><br><b>Cluster nodes where processes run that have CPU usage between 5% and 60%</b>:<br>'
+  info += '''<table id="nodes_with_weak_processes_table" class="tablesorter">
+    <thead>
+      <tr>
+        <th>Node</th>
+        <th>#Processes</th>
+      </tr>
+    </thead>
+    <tbody>'''
+  for key in handler.hostdict:
+    if handler.hostdict[key]['num_weak_processes'] > 0:
+      info += '<tr><td><a href="./shownode.cgi?nodename=%s">%s</a></td><td>%s</td></tr>' % (key,key,handler.hostdict[key]['num_weak_processes'])
+  info += '</tbody></table>'
+
   info += '</td></tr></table>'
+
 
   if error:
     info += "<font color='red'><b>There was an error gathering information from Ganglia. The information in the heatmap is incomplete</b></font>"
@@ -195,6 +219,7 @@ print '''Content-Type: text/html
     <script type="text/javascript">
       $(document).ready(function() {
           $("#overloaded_nodes_table").tablesorter({sortList:[[1,1]], widgets:['zebra']});
+          $("#nodes_with_weak_processes_table").tablesorter({sortList:[[1,1]], widgets:['zebra']});
       });
 
       function reload() {
