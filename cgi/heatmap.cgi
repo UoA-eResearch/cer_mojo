@@ -169,7 +169,7 @@ try:
       <tr>
         <th>Node</th>
         <th>OverLoad</th>
-        <th>#Processes</th>
+        <th>#Processes/Threads</th>
         <th>#CPU cores</th>
       </tr>
     </thead>
