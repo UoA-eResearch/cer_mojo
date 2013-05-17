@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 import os
+import sys
+import traceback
 import itertools as it
 import cgi
 import cgitb
@@ -127,7 +129,8 @@ try:
     else:
       info += 'No blocked jobs.'
 except:
-  info = "Failed to gather information: %s" % sys.exc_info()[1]
+  #info = "Failed to gather information: %s" % sys.exc_info()[1]
+  info = "Failed to gather node information:<br><pre>%s</pre>" % traceback.format_exc()
 
 # print response
 print '''Content-Type: text/html
