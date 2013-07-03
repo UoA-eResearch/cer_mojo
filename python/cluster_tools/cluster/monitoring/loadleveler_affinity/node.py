@@ -9,14 +9,17 @@ class Nodes:
   def __init__(self):
     pass
   
-  def get_node_list(self):
+  def get_node_list(self, llstatus_output=''):
     ''' Get a list of all cluster nodes '''
     node_list = list()
-    command = config.llstatus + ' -f %n'
-    (stdout,stderr,rc) = syscall.execute(command)
-    if stdout == "":
-      raise Exception('failed to get node list. stdout empty for command \'%s\'' % command)
-    for line in stdout.split('\n')[1:]:
+    if llstatus_output == '':
+      command = config.llstatus + ' -f %n'
+      (stdout,stderr,rc) = syscall.execute(command)
+      if stdout == "":
+        raise Exception('failed to get node list. stdout empty for command \'%s\'' % command)
+      llstatus_output = stdout
+      
+    for line in llstatus_output.split('\n')[1:]:
       line = line.strip()
       if not line == '' and not line[0] == ' ':
         if len(line.split()) > 1:

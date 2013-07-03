@@ -1,5 +1,6 @@
 import re, time
 import cluster.monitoring.loadleveler_affinity.config as config
+from cluster.monitoring.loadleveler_affinity.job import Job as Job
 import cluster.util.system_call as syscall
 from cluster.util.stringutil import strip_lines
 from cluster.util.stringutil import extract
@@ -8,10 +9,13 @@ class Queue:
 
   _llq_output = ''
 
-  def __init__(self):
-    (stdout,stderr,rc) = syscall.execute('%s -l' % config.llq)
-    self._llq_output = strip_lines(stdout)
-
+  def __init__(self, llq_output=''):
+    if llq_output == '':
+      (stdout,stderr,rc) = syscall.execute('%s -l' % config.llq)
+      self._llq_output = strip_lines(stdout)
+    else:
+      self._llq_output = strip_lines(llq_output)
+      
   def get_active_jobs(self, user=''):
     ''' Get list of active jobs '''
     jobs = []
@@ -21,31 +25,19 @@ class Queue:
         status = extract(ll_job, 'Status:', '\n')
         if status == "Running":
           job = {}
-          job['id'] = extract(ll_job, 'Job Step Id:', '\n')
-          job['user'] = extract(ll_job, 'Owner:', '\n')
-          job['group'] = extract(ll_job, 'Class:', '\n')
+          j = Job(extract(ll_job, 'Job Step Id:', '\n'), ll_job)
+          job['id'] = j.get_id()
+          job['user'] = j.get_user()
+          job['group'] = j.get_queue()
           node = extract(ll_job, 'Allocated Host:', '\n')
           if node != '':
             job['node'] = node
-            cores = extract(ll_job, 'Parallel Threads:', '\n')
-            if cores == '' or cores == '0':
-              job['cores'] = 1
-            else:
-              job['cores'] = cores
           else: 
             # probably more than one core requested
             node = extract(ll_job, 'Allocated Hosts :', 'Master Task')
             job['node'] = extract(node, None, '::')
-            tmp = extract(ll_job, 'Task\n----\n')
-            job['cores'] = extract(tmp, 'Num Task Inst:', '\n')
-          # format: Tue 20 Mar 2012 02:49:00 PM NZDT
-          # new format: Mon Mar 12 18:52:43 2012
-          start_time = extract(ll_job, 'Dispatch Time:', '\n')
-          try:
-            t = time.strptime(start_time, '%a %d %b %Y %I:%M:%S %p %Z')
-          except:
-            t = time.strptime(start_time, '%a %b %d %H:%M:%S %Y')
-          job['start_time'] = time.strftime('%m/%d %H:%M:%S',t)
+          job['cores'] = j.get_req_cores()
+          job['start_time'] = j.get_start_time()
           if user == '' or user == job['user']:
             jobs.append(job)
     return jobs

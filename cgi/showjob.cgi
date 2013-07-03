@@ -36,7 +36,7 @@ try:
     info += "<tr><td><b>Job Directory</b>:</td><td>%s</td></tr>" % job['job_directory']
     info += "<tr><td><b>Queue</b>:</td><td>%s</td></tr>" % job['queue']
     info += "<tr><td><b>Requested CPU Cores</b>:</td><td>%s</td></tr>" % job['req_cores']
-    info += "<tr><td><b>Requested Memory [GB]</b>:</td><td>%s</td></tr>" % job['req_mem_gb']
+    info += "<tr><td><b>Requested Memory [GB]</b>:</td><td>%s (per %s)</td></tr>" % (job['req_mem_gb']['value'], job['req_mem_gb']['split_mode'])
     info += "<tr><td><b>Used Memory [GB]</b>:</td><td>%s</td></tr>" % job['used_mem_gb']
     info += "<tr><td><b>Requested Walltime [h:m:s]</b>:</td><td>%s</td></tr>" % job['req_walltime']
     info += "<tr><td><b>Used Walltime [h:m:s]</b>:</td><td>%s</td></tr>" % job['used_walltime']
