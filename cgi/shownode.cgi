@@ -34,10 +34,8 @@ tt['pid'] = "Process ID"
 tt['cmd'] = "The command name of this process, without arguments"
 tt['%cpu'] = "The percentage of available CPU cycles occupied by this process. This is always an approximate figure, which is more accurate for longer running processes"
 tt['%mem'] = "The percentage of physical memory occupied by this process"
-tt['size'] = "The size of the 'text' memory segment of this process, in kilobytes. This approximately relates the size of the executable itself (depending on the BSS segment)"
-tt['data'] = "Approximately the size of all dynamically allocated memory of this process, in kilobytes. Includes the Heap and Stack of the process. Defined as the 'resident' - 'shared' size, where resident is the total amount of physical memory used, and shared is defined below. Includes the the text segment as well if this process has no children"
-tt['shared'] = "The size of the shared memory belonging to this process, in kilobytes. Defined as any page of this process' physical memory that is referenced by another process. Includes shared libraries such as the standard libc and loader"
-tt['vm'] = "The total virtual memory size used by this process, in kilobytes"
+tt['vm'] = "The total virtual memory size currently used by this process, in kilobytes"
+tt['vmpeak'] = "The total peak virtual memory size used by this process, in kilobytes"
 
 # Parsing handler for SAX events: extract information of processes for this machine
 class MyHandler(xml.sax.ContentHandler):
@@ -143,27 +141,25 @@ if valid_nodename(form):
     info += "Note: There might be up to 15s delay to sync the processes belonging to a job<br>"
     info += '<table id="processes" class="tablesorter"><thead><tr>'
     info += '<th><span title="%s">PID</span></th>' % tt['pid']
+    info += '<th><span title="%s">LL job ID</span></th>' % tt['llid']
     info += '<th><span title="%s">User</span></th>' % tt['userId']
-    info += '<th><span title="%s">Command</span></th>' % tt['cmd']
     info += '<th><span title="%s">%%CPU</span></th>' % tt['%cpu']
     info += '<th><span title="%s">%%MEM</span></th>' % tt['%mem']
     info += '<th><span title="%s">vm [kB]</span></th>' % tt['vm']
-    info += '<th><span title="%s">size [kB]</span></th>' % tt['size']
-    info += '<th><span title="%s">data [kB]</span></th>' % tt['data']
-    info += '<th><span title="%s">shared [kB]</span></th>' % tt['shared']
+    info += '<th><span title="%s">Peak vm [kB]</span></th>' % tt['vmpeak']
+    info += '<th><span title="%s">Command</span></th>' % tt['cmd']
     info += '</tr></thead><tbody>'
   
     for p in processes:
       info += '<tr>'
       info += '<td>%s</td>' % p['pid']
+      info += '<td>%s</td>' % p['llid']
       info += '<td>%s</td>' % p['user']
-      info += '<td>%s</td>' % p['cmd']
       info += '<td>%s</td>' % p['%cpu']
       info += '<td>%s</td>' % p['%mem']
       info += '<td>%s</td>' % p['vm']
-      info += '<td>%s</td>' % p['size']
-      info += '<td>%s</td>' % p['data']
-      info += '<td>%s</td>' % p['shared']
+      info += '<td>%s</td>' % p['vmpeak']
+      info += '<td>%s</td>' % p['cmd']
       info += '</tr>'
     info += '</tbody></table>'    
   except:
