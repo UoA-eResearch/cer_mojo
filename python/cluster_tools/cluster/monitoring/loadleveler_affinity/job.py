@@ -154,9 +154,9 @@ class Job:
       tmpval = float(val[0:-2])
       unit = val[-2:len(val)]
       if unit.lower() == 'mb':
-        tmpval = float(val)/1024
+        tmpval = float(tmpval)/1024
       elif unit.lower() == 'kb':
-        tmpval = float(val)/(1024*1024)
+        tmpval = float(tmpval)/(1024*1024)
       mem['value'] = '%.3f' % tmpval
     return mem  
     
