@@ -61,7 +61,7 @@ try:
     
   # fetch process information from ganglia
   # get all information in XML format from ganglia gmond via netcat
-  (stdout,stderr,rc) = systemcall.execute("nc %s %s" % (config.ganglia_gmond_host, config.ganglia_gmond_port))
+  (stdout,stderr,rc) = systemcall.execute("nc %s %s" % (config.ganglia_gmond_aggregator, config.ganglia_gmond_port))
 
   # parse XML
   handler = MyHandler()
