@@ -1,0 +1,122 @@
+===== Job Step login1-p.4444578.0 =====
+        Job Step Id: login1-p.4444578.0
+           Job Name: login1-p.4444578
+          Step Name: 0
+  Structure Version: 10
+              Owner: ymoh699
+         Queue Date: Thu 15 Aug 2013 11:59:03 AM NZST
+             Status: Running
+     Reservation ID:  
+  Requested Res. ID:  
+          Recurring: False
+ Scheduling Cluster: 
+ Submitting Cluster: 
+    Sending Cluster: 
+  Requested Cluster: 
+     Schedd History: 
+   Outbound Schedds: 
+    Submitting User: 
+   Eligibility Time: Sun 18 Aug 2013 08:10:16 AM NZST
+      Dispatch Time: Sun 18 Aug 2013 08:14:14 AM NZST
+    Completion Date: 
+    Completion Code: 
+        Favored Job: No
+      User Priority: 50
+       user_sysprio: 0
+      class_sysprio: 30
+      group_sysprio: 0
+    System Priority: -118660
+          q_sysprio: -118660
+ Previous q_sysprio: -118690
+      Notifications: Complete
+ Virtual Image Size: 1 kb
+         Large Page: N
+         Coschedule: no
+       SMT required: as_is
+    MetaCluster Job: no
+     Checkpointable: no
+    Ckpt Start Time: 
+Good Ckpt Time/Date: 
+   Ckpt Elapse Time: 0 seconds
+Fail Ckpt Time/Date: 
+    Ckpt Accum Time: 0 seconds
+    Checkpoint File: 
+   Ckpt Execute Dir: 
+  Restart From Ckpt: no
+ Restart Same Nodes: no
+            Restart: yes
+        Preemptable: yes
+ Preempt Wait Count: 0
+     Hold Job Until: 
+     User Hold Time: 00:00:00 (0 seconds)
+               RSet: RSET_MCM_AFFINITY
+Mcm Affinity Option: MCM_ACCUMULATE MCM_MEM_PREF MCM_SNI_NONE
+      Task Affinity: cpu(1)
+      Cpus Per Core:  0
+   Parallel Threads:  1
+                Cmd: /tmp/tmp.ZcFFhUPBC1
+               Args: 
+                Env: 
+                 In: /dev/null
+                Out: stdout.txt
+                Err: stderr.txt
+Initial Working Dir: /home/ymoh699
+         Dependency: 
+Data Stg Dependency: 
+          Resources: ConsumableMemory(20.000 gb) ConsumableVirtualMemory(20.000 gb)
+     Node Resources: 
+       Requirements: 
+        Preferences: 
+          Step Type: Serial
+     Min Processors: 
+     Max Processors: 
+     Allocated Host: compute-a1-063-p
+         Node Usage: shared
+    Submitting Host: login-p.local
+        Schedd Host: login1-p
+      Job Queue Key: 
+        Notify User: ymoh699@login-p.local
+              Shell: /bin/bash
+  LoadLeveler Group: nesi
+              Class: bigmem
+    Ckpt Hard Limit: undefined
+    Ckpt Soft Limit: undefined
+     Cpu Hard Limit: undefined
+     Cpu Soft Limit: undefined
+    Data Hard Limit: undefined
+    Data Soft Limit: undefined
+      As Hard Limit: undefined
+      As Soft Limit: undefined
+   Nproc Hard Limit: undefined
+   Nproc Soft Limit: undefined
+ Memlock Hard Limit: undefined
+ Memlock Soft Limit: undefined
+   Locks Hard Limit: undefined
+   Locks Soft Limit: undefined
+  Nofile Hard Limit: undefined
+  Nofile Soft Limit: undefined
+    Core Hard Limit: undefined
+    Core Soft Limit: undefined
+    File Hard Limit: undefined
+    File Soft Limit: undefined
+   Stack Hard Limit: undefined
+   Stack Soft Limit: undefined
+     Rss Hard Limit: undefined
+     Rss Soft Limit: undefined
+Step Cpu Hard Limit: unlimited
+Step Cpu Soft Limit: unlimited
+Wall Clk Hard Limit: 3+00:00:00 (259200 seconds)
+Wall Clk Soft Limit: 3+00:00:00 (259200 seconds)
+            Comment: 
+            Account: uoa
+         Unix Group: nesi
+Negotiator Messages: 
+      Bulk Transfer: No
+Adapter Requirement: 
+          Step Cpus: 0
+Step Virtual Memory: 20.000 gb
+   Step Real Memory: 20.000 gb
+Step Large Page Mem: 0.000 mb
+     Cluster Option: none
+     Network Usages: 
+Stripe Min Networks: False

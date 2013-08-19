@@ -1,0 +1,158 @@
+===== Job Step login1-p.2776567.0 =====
+        Job Step Id: login1-p.2776567.0
+           Job Name: login1-p.2776567
+          Step Name: 0
+  Structure Version: 10
+              Owner: mfel395
+         Queue Date: Wed 03 Apr 2013 10:04:14 AM NZDT
+             Status: Running
+     Reservation ID:  
+  Requested Res. ID:  
+          Recurring: False
+ Scheduling Cluster: 
+ Submitting Cluster: 
+    Sending Cluster: 
+  Requested Cluster: 
+     Schedd History: 
+   Outbound Schedds: 
+    Submitting User: 
+   Eligibility Time: Wed 03 Apr 2013 10:04:14 AM NZDT
+      Dispatch Time: Wed 03 Apr 2013 10:04:15 AM NZDT
+    Completion Date: 
+    Completion Code: 
+        Favored Job: No
+      User Priority: 50
+       user_sysprio: 0
+      class_sysprio: 10000
+      group_sysprio: 0
+    System Priority: 100000
+          q_sysprio: 100000
+ Previous q_sysprio: 0
+      Notifications: Complete
+ Virtual Image Size: 1 kb
+         Large Page: N
+         Coschedule: no
+       SMT required: as_is
+    MetaCluster Job: no
+     Checkpointable: no
+    Ckpt Start Time: 
+Good Ckpt Time/Date: 
+   Ckpt Elapse Time: 0 seconds
+Fail Ckpt Time/Date: 
+    Ckpt Accum Time: 0 seconds
+    Checkpoint File: 
+   Ckpt Execute Dir: 
+  Restart From Ckpt: no
+ Restart Same Nodes: no
+            Restart: yes
+        Preemptable: yes
+ Preempt Wait Count: 0
+     Hold Job Until: 
+     User Hold Time: 00:00:00 (0 seconds)
+               RSet: RSET_MCM_AFFINITY
+Mcm Affinity Option: MCM_ACCUMULATE MCM_MEM_PREF MCM_SNI_NONE
+      Task Affinity: cpu(1)
+      Cpus Per Core:  0
+   Parallel Threads:  1
+                Env: 
+                 In: /dev/null
+                Out: stdout.txt
+                Err: stderr.txt
+Initial Working Dir: /home/mfel395/jobs/mpi
+         Dependency: 
+Data Stg Dependency: 
+          Resources: ConsumableMemory(15 gb) ConsumableVirtualMemory(15 gb)
+     Node Resources: 
+          Step Type: General Parallel
+         Node Usage: shared
+    Submitting Host: login-p.local
+        Schedd Host: login1-p
+      Job Queue Key: 
+        Notify User: mfel395@login-p.local
+              Shell: /bin/bash
+  LoadLeveler Group: nesi
+              Class: test
+    Ckpt Hard Limit: undefined
+    Ckpt Soft Limit: undefined
+     Cpu Hard Limit: undefined
+     Cpu Soft Limit: undefined
+    Data Hard Limit: undefined
+    Data Soft Limit: undefined
+      As Hard Limit: undefined
+      As Soft Limit: undefined
+   Nproc Hard Limit: undefined
+   Nproc Soft Limit: undefined
+ Memlock Hard Limit: undefined
+ Memlock Soft Limit: undefined
+   Locks Hard Limit: undefined
+   Locks Soft Limit: undefined
+  Nofile Hard Limit: undefined
+  Nofile Soft Limit: undefined
+    Core Hard Limit: undefined
+    Core Soft Limit: undefined
+    File Hard Limit: undefined
+    File Soft Limit: undefined
+   Stack Hard Limit: undefined
+   Stack Soft Limit: undefined
+     Rss Hard Limit: undefined
+     Rss Soft Limit: undefined
+Step Cpu Hard Limit: undefined
+Step Cpu Soft Limit: undefined
+Wall Clk Hard Limit: 00:06:00 (360 seconds)
+Wall Clk Soft Limit: 00:06:00 (360 seconds)
+            Comment: 
+            Account: uoa
+         Unix Group: nesi
+Negotiator Messages: 
+      Bulk Transfer: No
+Adapter Requirement: 
+          Step Cpus: 0
+Step Virtual Memory: 7.324 gb
+   Step Real Memory: 7.324 gb
+Step Large Page Mem: 0.000 mb
+     Cluster Option: none
+     Network Usages: -1(1,mpi,IP,0,0),
+
+Stripe Min Networks: False
+--------------------------------------------------------------------------------
+Node
+----
+
+   Name            : 
+   Requirements    : 
+   Preferences     : 
+   Node minimum    : 1
+   Node maximum    : 1
+   Node actual     : 1
+   Allocated Hosts : compute-b1-063-p::,MCM1:CPU< 8 >,MCM1:CPU< 9 >,MCM1:CPU< 10 >,MCM1:CPU< 11 >,MCM1:CPU< 12 >,MCM1:CPU< 13 >,MCM1:CPU< 14 >,MCM1:CPU< 15 >,MCM0:CPU< 1 >,MCM0:CPU< 2 >,MCM0:CPU< 3 >,MCM0:CPU< 4 >,MCM0:CPU< 5 >,MCM0:CPU< 6 >,MCM0:CPU< 7 >
+
+   Master Task
+   -----------
+
+      Executable   : /home/mfel395/jobs/mpi/job.ll
+      Exec Args    : 
+      Num Task Inst: 1
+      Task Instance: compute-b1-063-p:-1:,
+
+   Task
+   ----
+
+      Num Task Inst: 15
+      Task Instance: compute-b1-063-p:0:,MCM1:CPU< 8 >
+      Task Instance: compute-b1-063-p:1:,MCM1:CPU< 9 >
+      Task Instance: compute-b1-063-p:2:,MCM1:CPU< 10 >
+      Task Instance: compute-b1-063-p:3:,MCM1:CPU< 11 >
+      Task Instance: compute-b1-063-p:4:,MCM1:CPU< 12 >
+      Task Instance: compute-b1-063-p:5:,MCM1:CPU< 13 >
+      Task Instance: compute-b1-063-p:6:,MCM1:CPU< 14 >
+      Task Instance: compute-b1-063-p:7:,MCM1:CPU< 15 >
+      Task Instance: compute-b1-063-p:8:,MCM0:CPU< 1 >
+      Task Instance: compute-b1-063-p:9:,MCM0:CPU< 2 >
+      Task Instance: compute-b1-063-p:10:,MCM0:CPU< 3 >
+      Task Instance: compute-b1-063-p:11:,MCM0:CPU< 4 >
+      Task Instance: compute-b1-063-p:12:,MCM0:CPU< 5 >
+      Task Instance: compute-b1-063-p:13:,MCM0:CPU< 6 >
+      Task Instance: compute-b1-063-p:14:,MCM0:CPU< 7 >
+--------------------------------------------------------------------------------
+
+1 job step(s) in query, 0 waiting, 0 pending, 1 running, 0 held, 0 preempted

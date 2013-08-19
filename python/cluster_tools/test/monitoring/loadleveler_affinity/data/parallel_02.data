@@ -1,0 +1,301 @@
+===== Job Step login1-p.2774853.0 =====
+        Job Step Id: login1-p.2774853.0
+           Job Name: mpijob_onepernode
+          Step Name: 0
+  Structure Version: 10
+              Owner: agri901
+         Queue Date: Tue 02 Apr 2013 12:22:59 PM NZDT
+             Status: Running
+     Reservation ID:  
+  Requested Res. ID:  
+          Recurring: False
+ Scheduling Cluster: 
+ Submitting Cluster: 
+    Sending Cluster: 
+  Requested Cluster: 
+     Schedd History: 
+   Outbound Schedds: 
+    Submitting User: 
+   Eligibility Time: Tue 02 Apr 2013 12:22:59 PM NZDT
+      Dispatch Time: Tue 02 Apr 2013 12:22:59 PM NZDT
+    Completion Date: 
+    Completion Code: 
+        Favored Job: No
+      User Priority: 50
+       user_sysprio: 0
+      class_sysprio: 60
+      group_sysprio: 0
+    System Priority: 600
+          q_sysprio: 600
+ Previous q_sysprio: 0
+      Notifications: Always
+ Virtual Image Size: 2 kb
+         Large Page: N
+         Coschedule: no
+       SMT required: as_is
+    MetaCluster Job: no
+     Checkpointable: no
+    Ckpt Start Time: 
+Good Ckpt Time/Date: 
+   Ckpt Elapse Time: 0 seconds
+Fail Ckpt Time/Date: 
+    Ckpt Accum Time: 0 seconds
+    Checkpoint File: 
+   Ckpt Execute Dir: 
+  Restart From Ckpt: no
+ Restart Same Nodes: no
+            Restart: yes
+        Preemptable: yes
+ Preempt Wait Count: 0
+     Hold Job Until: 
+     User Hold Time: 00:00:00 (0 seconds)
+               RSet: RSET_NONE
+Mcm Affinity Option:   
+      Task Affinity: 
+      Cpus Per Core:  0
+   Parallel Threads:  0
+                Env: 
+                 In: /dev/null
+                Out: /home/agri901/PhD/rabiplus/stdout.txt
+                Err: /home/agri901/PhD/rabiplus/stderr.txt
+Initial Working Dir: /home/agri901/PhD/rabiplus/
+         Dependency: 
+Data Stg Dependency: 
+          Resources: 
+     Node Resources: ConsumableMemory(88.000 gb) ConsumableVirtualMemory(88.000 gb) ConsumableCpus(1)
+          Step Type: MPICH Parallel
+         Node Usage: shared
+    Submitting Host: login-p.local
+        Schedd Host: login1-p
+      Job Queue Key: 
+        Notify User: arne.grimsmo@gmail.com
+              Shell: /bin/bash
+  LoadLeveler Group: nesi
+              Class: medium
+    Ckpt Hard Limit: undefined
+    Ckpt Soft Limit: undefined
+     Cpu Hard Limit: undefined
+     Cpu Soft Limit: undefined
+    Data Hard Limit: undefined
+    Data Soft Limit: undefined
+      As Hard Limit: undefined
+      As Soft Limit: undefined
+   Nproc Hard Limit: undefined
+   Nproc Soft Limit: undefined
+ Memlock Hard Limit: undefined
+ Memlock Soft Limit: undefined
+   Locks Hard Limit: undefined
+   Locks Soft Limit: undefined
+  Nofile Hard Limit: undefined
+  Nofile Soft Limit: undefined
+    Core Hard Limit: undefined
+    Core Soft Limit: undefined
+    File Hard Limit: undefined
+    File Soft Limit: undefined
+   Stack Hard Limit: undefined
+   Stack Soft Limit: undefined
+     Rss Hard Limit: undefined
+     Rss Soft Limit: undefined
+Step Cpu Hard Limit: unlimited
+Step Cpu Soft Limit: unlimited
+Wall Clk Hard Limit: 1+12:00:00 (129600 seconds)
+Wall Clk Soft Limit: 1+12:00:00 (129600 seconds)
+            Comment: 
+            Account: uoa
+         Unix Group: nesi
+Negotiator Messages: 
+      Bulk Transfer: No
+Adapter Requirement: 
+          Step Cpus: 0
+Step Virtual Memory: 0.000 mb
+   Step Real Memory: 0.000 mb
+Step Large Page Mem: 0.000 mb
+     Cluster Option: none
+     Network Usages: 
+Stripe Min Networks: False
+--------------------------------------------------------------------------------
+Node
+----
+
+   Name            : 
+   Requirements    : 
+   Preferences     : 
+   Node minimum    : 80
+   Node maximum    : 80
+   Node actual     : 80
+   Allocated Hosts : compute-b1-033-p::
+                   + compute-c1-035-p::
+                   + compute-b1-001-p::
+                   + compute-b1-047-p::
+                   + compute-c1-039-p::
+                   + compute-b1-030-p::
+                   + compute-b1-054-p::
+                   + compute-c1-024-p::
+                   + compute-c1-028-p::
+                   + compute-c1-029-p::
+                   + compute-c1-053-p::
+                   + compute-b1-029-p::
+                   + compute-b1-062-p::
+                   + compute-b1-019-p::
+                   + compute-b1-034-p::
+                   + compute-c1-006-p::
+                   + compute-b1-057-p::
+                   + compute-c1-032-p::
+                   + compute-c1-043-p::
+                   + compute-b1-035-p::
+                   + compute-b1-045-p::
+                   + compute-c1-047-p::
+                   + compute-b1-016-p::
+                   + compute-b1-058-p::
+                   + compute-c1-050-p::
+                   + compute-c1-020-p::
+                   + compute-c1-044-p::
+                   + compute-c1-046-p::
+                   + compute-c1-056-p::
+                   + compute-b1-024-p::
+                   + compute-b1-036-p::
+                   + compute-b1-046-p::
+                   + compute-b1-061-p::
+                   + compute-c1-033-p::
+                   + compute-b1-023-p::
+                   + compute-c1-025-p::
+                   + compute-b1-017-p::
+                   + compute-b1-027-p::
+                   + compute-b1-031-p::
+                   + compute-b1-055-p::
+                   + compute-c1-010-p::
+                   + compute-c1-023-p::
+                   + compute-b1-022-p::
+                   + compute-b1-042-p::
+                   + compute-c1-027-p::
+                   + compute-c1-041-p::
+                   + compute-b1-049-p::
+                   + compute-c1-034-p::
+                   + compute-b1-048-p::
+                   + compute-c1-014-p::
+                   + compute-c1-054-p::
+                   + compute-c1-048-p::
+                   + compute-b1-002-p::
+                   + compute-c1-009-p::
+                   + compute-c1-021-p::
+                   + compute-c1-011-p::
+                   + compute-b1-010-p::
+                   + compute-b1-018-p::
+                   + compute-c1-013-p::
+                   + compute-b1-011-p::
+                   + compute-c1-030-p::
+                   + compute-c1-022-p::
+                   + compute-b1-068-p::
+                   + compute-c1-045-p::
+                   + compute-c1-012-p::
+                   + compute-b1-050-p::
+                   + compute-b1-060-p::
+                   + compute-b1-051-p::
+                   + compute-a1-018-p::
+                   + compute-c1-016-p::
+                   + compute-b1-067-p::
+                   + compute-c1-005-p::
+                   + compute-c1-055-p::
+                   + compute-c1-019-p::
+                   + compute-b1-026-p::
+                   + compute-b1-041-p::
+                   + compute-c1-052-p::
+                   + compute-c1-003-p::
+                   + compute-b1-032-p::
+                   + compute-b1-013-p::
+
+   Master Task
+   -----------
+
+      Executable   : /home/agri901/PhD/rabiplus/mpijob_onepernode.ll
+      Exec Args    : 
+      Num Task Inst: 1
+      Task Instance: compute-b1-033-p:-1:,
+
+   Task
+   ----
+
+      Num Task Inst: 80
+      Task Instance: compute-b1-033-p:0:,
+      Task Instance: compute-c1-035-p:1:,
+      Task Instance: compute-b1-001-p:2:,
+      Task Instance: compute-b1-047-p:3:,
+      Task Instance: compute-c1-039-p:4:,
+      Task Instance: compute-b1-030-p:5:,
+      Task Instance: compute-b1-054-p:6:,
+      Task Instance: compute-c1-024-p:7:,
+      Task Instance: compute-c1-028-p:8:,
+      Task Instance: compute-c1-029-p:9:,
+      Task Instance: compute-c1-053-p:10:,
+      Task Instance: compute-b1-029-p:11:,
+      Task Instance: compute-b1-062-p:12:,
+      Task Instance: compute-b1-019-p:13:,
+      Task Instance: compute-b1-034-p:14:,
+      Task Instance: compute-c1-006-p:15:,
+      Task Instance: compute-b1-057-p:16:,
+      Task Instance: compute-c1-032-p:17:,
+      Task Instance: compute-c1-043-p:18:,
+      Task Instance: compute-b1-035-p:19:,
+      Task Instance: compute-b1-045-p:20:,
+      Task Instance: compute-c1-047-p:21:,
+      Task Instance: compute-b1-016-p:22:,
+      Task Instance: compute-b1-058-p:23:,
+      Task Instance: compute-c1-050-p:24:,
+      Task Instance: compute-c1-020-p:25:,
+      Task Instance: compute-c1-044-p:26:,
+      Task Instance: compute-c1-046-p:27:,
+      Task Instance: compute-c1-056-p:28:,
+      Task Instance: compute-b1-024-p:29:,
+      Task Instance: compute-b1-036-p:30:,
+      Task Instance: compute-b1-046-p:31:,
+      Task Instance: compute-b1-061-p:32:,
+      Task Instance: compute-c1-033-p:33:,
+      Task Instance: compute-b1-023-p:34:,
+      Task Instance: compute-c1-025-p:35:,
+      Task Instance: compute-b1-017-p:36:,
+      Task Instance: compute-b1-027-p:37:,
+      Task Instance: compute-b1-031-p:38:,
+      Task Instance: compute-b1-055-p:39:,
+      Task Instance: compute-c1-010-p:40:,
+      Task Instance: compute-c1-023-p:41:,
+      Task Instance: compute-b1-022-p:42:,
+      Task Instance: compute-b1-042-p:43:,
+      Task Instance: compute-c1-027-p:44:,
+      Task Instance: compute-c1-041-p:45:,
+      Task Instance: compute-b1-049-p:46:,
+      Task Instance: compute-c1-034-p:47:,
+      Task Instance: compute-b1-048-p:48:,
+      Task Instance: compute-c1-014-p:49:,
+      Task Instance: compute-c1-054-p:50:,
+      Task Instance: compute-c1-048-p:51:,
+      Task Instance: compute-b1-002-p:52:,
+      Task Instance: compute-c1-009-p:53:,
+      Task Instance: compute-c1-021-p:54:,
+      Task Instance: compute-c1-011-p:55:,
+      Task Instance: compute-b1-010-p:56:,
+      Task Instance: compute-b1-018-p:57:,
+      Task Instance: compute-c1-013-p:58:,
+      Task Instance: compute-b1-011-p:59:,
+      Task Instance: compute-c1-030-p:60:,
+      Task Instance: compute-c1-022-p:61:,
+      Task Instance: compute-b1-068-p:62:,
+      Task Instance: compute-c1-045-p:63:,
+      Task Instance: compute-c1-012-p:64:,
+      Task Instance: compute-b1-050-p:65:,
+      Task Instance: compute-b1-060-p:66:,
+      Task Instance: compute-b1-051-p:67:,
+      Task Instance: compute-a1-018-p:68:,
+      Task Instance: compute-c1-016-p:69:,
+      Task Instance: compute-b1-067-p:70:,
+      Task Instance: compute-c1-005-p:71:,
+      Task Instance: compute-c1-055-p:72:,
+      Task Instance: compute-c1-019-p:73:,
+      Task Instance: compute-b1-026-p:74:,
+      Task Instance: compute-b1-041-p:75:,
+      Task Instance: compute-c1-052-p:76:,
+      Task Instance: compute-c1-003-p:77:,
+      Task Instance: compute-b1-032-p:78:,
+      Task Instance: compute-b1-013-p:79:,
+--------------------------------------------------------------------------------
+
+1 job step(s) in query, 0 waiting, 0 pending, 1 running, 0 held, 0 preempted

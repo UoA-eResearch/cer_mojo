@@ -1,0 +1,185 @@
+===== Job Step login1-p.2953929.0 =====
+        Job Step Id: login1-p.2953929.0
+           Job Name: dtcheck2
+          Step Name: 0
+  Structure Version: 10
+              Owner: swas118
+         Queue Date: Tue 09 Apr 2013 02:47:04 PM NZST
+             Status: Running
+     Reservation ID:  
+  Requested Res. ID:  
+          Recurring: False
+ Scheduling Cluster: 
+ Submitting Cluster: 
+    Sending Cluster: 
+  Requested Cluster: 
+     Schedd History: 
+   Outbound Schedds: 
+    Submitting User: 
+   Eligibility Time: Tue 09 Apr 2013 02:47:05 PM NZST
+      Dispatch Time: Tue 09 Apr 2013 02:47:05 PM NZST
+    Completion Date: 
+    Completion Code: 
+        Favored Job: No
+      User Priority: 50
+       user_sysprio: 0
+      class_sysprio: 70
+      group_sysprio: 0
+    System Priority: 700
+          q_sysprio: 700
+ Previous q_sysprio: 0
+      Notifications: Complete
+ Virtual Image Size: 2 kb
+         Large Page: N
+         Coschedule: no
+       SMT required: as_is
+    MetaCluster Job: no
+     Checkpointable: no
+    Ckpt Start Time: 
+Good Ckpt Time/Date: 
+   Ckpt Elapse Time: 0 seconds
+Fail Ckpt Time/Date: 
+    Ckpt Accum Time: 0 seconds
+    Checkpoint File: 
+   Ckpt Execute Dir: 
+  Restart From Ckpt: no
+ Restart Same Nodes: no
+            Restart: yes
+        Preemptable: yes
+ Preempt Wait Count: 0
+     Hold Job Until: 
+     User Hold Time: 00:00:00 (0 seconds)
+               RSet: RSET_MCM_AFFINITY
+Mcm Affinity Option: MCM_ACCUMULATE MCM_MEM_PREF MCM_SNI_NONE
+      Task Affinity: cpu(1)
+      Cpus Per Core:  0
+   Parallel Threads:  1
+                Env: 
+                 In: /dev/null
+                Out: stdout.out
+                Err: stderr.err
+Initial Working Dir: /home/swas118/gpfs1m/velo/dtCheck/2
+         Dependency: 
+Data Stg Dependency: 
+          Resources: ConsumableMemory(3 gb) ConsumableVirtualMemory(3 gb)
+     Node Resources: 
+          Step Type: General Parallel
+         Node Usage: shared
+    Submitting Host: login-p.local
+        Schedd Host: login1-p
+      Job Queue Key: 
+        Notify User: s.wasala@auckland.ac.nz
+              Shell: /bin/sh
+  LoadLeveler Group: nesi
+              Class: small1d
+    Ckpt Hard Limit: undefined
+    Ckpt Soft Limit: undefined
+     Cpu Hard Limit: undefined
+     Cpu Soft Limit: undefined
+    Data Hard Limit: undefined
+    Data Soft Limit: undefined
+      As Hard Limit: undefined
+      As Soft Limit: undefined
+   Nproc Hard Limit: undefined
+   Nproc Soft Limit: undefined
+ Memlock Hard Limit: undefined
+ Memlock Soft Limit: undefined
+   Locks Hard Limit: undefined
+   Locks Soft Limit: undefined
+  Nofile Hard Limit: undefined
+  Nofile Soft Limit: undefined
+    Core Hard Limit: undefined
+    Core Soft Limit: undefined
+    File Hard Limit: undefined
+    File Soft Limit: undefined
+   Stack Hard Limit: undefined
+   Stack Soft Limit: undefined
+     Rss Hard Limit: undefined
+     Rss Soft Limit: undefined
+Step Cpu Hard Limit: unlimited
+Step Cpu Soft Limit: unlimited
+Wall Clk Hard Limit: 1+00:00:00 (86400 seconds)
+Wall Clk Soft Limit: 1+00:00:00 (86400 seconds)
+            Comment: 
+            Account: uoa
+         Unix Group: nesi
+Negotiator Messages: 
+      Bulk Transfer: No
+Adapter Requirement: 
+          Step Cpus: 0
+Step Virtual Memory: 119.062 gb
+   Step Real Memory: 119.062 gb
+Step Large Page Mem: 0.000 mb
+     Cluster Option: none
+     Network Usages: -1(1,mpi,IP,0,0),
+
+Stripe Min Networks: False
+--------------------------------------------------------------------------------
+Node
+----
+
+   Name            : 
+   Requirements    : 
+   Preferences     : 
+   Node minimum    : 4
+   Node maximum    : 4
+   Node actual     : 4
+   Allocated Hosts : compute-c1-002-p::,MCM1:CPU< 9 >,MCM1:CPU< 10 >,MCM1:CPU< 11 >,MCM1:CPU< 12 >,MCM1:CPU< 13 >,MCM1:CPU< 14 >,MCM1:CPU< 15 >,MCM0:CPU< 1 >,MCM0:CPU< 2 >,MCM0:CPU< 3 >
+                   + compute-b1-038-p::,MCM1:CPU< 9 >,MCM1:CPU< 10 >,MCM1:CPU< 11 >,MCM1:CPU< 12 >,MCM1:CPU< 13 >,MCM1:CPU< 14 >,MCM1:CPU< 15 >,MCM0:CPU< 1 >,MCM0:CPU< 2 >,MCM0:CPU< 3 >
+                   + compute-c1-039-p::,MCM1:CPU< 8 >,MCM1:CPU< 9 >,MCM1:CPU< 10 >,MCM1:CPU< 11 >,MCM1:CPU< 12 >,MCM1:CPU< 13 >,MCM1:CPU< 14 >,MCM1:CPU< 15 >,MCM0:CPU< 1 >,MCM0:CPU< 2 >
+                   + compute-c1-044-p::,MCM1:CPU< 8 >,MCM1:CPU< 9 >,MCM1:CPU< 10 >,MCM1:CPU< 11 >,MCM1:CPU< 12 >,MCM1:CPU< 13 >,MCM1:CPU< 14 >,MCM1:CPU< 15 >,MCM0:CPU< 1 >,MCM0:CPU< 2 >
+
+   Master Task
+   -----------
+
+      Executable   : /gpfs1m/users/swas118/velo/dtCheck/2/flatplate.job
+      Exec Args    : 
+      Num Task Inst: 1
+      Task Instance: compute-c1-002-p:-1:,
+
+   Task
+   ----
+
+      Num Task Inst: 40
+      Task Instance: compute-c1-002-p:0:,MCM1:CPU< 9 >
+      Task Instance: compute-c1-002-p:1:,MCM1:CPU< 10 >
+      Task Instance: compute-c1-002-p:2:,MCM1:CPU< 11 >
+      Task Instance: compute-c1-002-p:3:,MCM1:CPU< 12 >
+      Task Instance: compute-c1-002-p:4:,MCM1:CPU< 13 >
+      Task Instance: compute-c1-002-p:5:,MCM1:CPU< 14 >
+      Task Instance: compute-c1-002-p:6:,MCM1:CPU< 15 >
+      Task Instance: compute-c1-002-p:7:,MCM0:CPU< 1 >
+      Task Instance: compute-c1-002-p:8:,MCM0:CPU< 2 >
+      Task Instance: compute-c1-002-p:9:,MCM0:CPU< 3 >
+      Task Instance: compute-b1-038-p:10:,MCM1:CPU< 9 >
+      Task Instance: compute-b1-038-p:11:,MCM1:CPU< 10 >
+      Task Instance: compute-b1-038-p:12:,MCM1:CPU< 11 >
+      Task Instance: compute-b1-038-p:13:,MCM1:CPU< 12 >
+      Task Instance: compute-b1-038-p:14:,MCM1:CPU< 13 >
+      Task Instance: compute-b1-038-p:15:,MCM1:CPU< 14 >
+      Task Instance: compute-b1-038-p:16:,MCM1:CPU< 15 >
+      Task Instance: compute-b1-038-p:17:,MCM0:CPU< 1 >
+      Task Instance: compute-b1-038-p:18:,MCM0:CPU< 2 >
+      Task Instance: compute-b1-038-p:19:,MCM0:CPU< 3 >
+      Task Instance: compute-c1-039-p:20:,MCM1:CPU< 8 >
+      Task Instance: compute-c1-039-p:21:,MCM1:CPU< 9 >
+      Task Instance: compute-c1-039-p:22:,MCM1:CPU< 10 >
+      Task Instance: compute-c1-039-p:23:,MCM1:CPU< 11 >
+      Task Instance: compute-c1-039-p:24:,MCM1:CPU< 12 >
+      Task Instance: compute-c1-039-p:25:,MCM1:CPU< 13 >
+      Task Instance: compute-c1-039-p:26:,MCM1:CPU< 14 >
+      Task Instance: compute-c1-039-p:27:,MCM1:CPU< 15 >
+      Task Instance: compute-c1-039-p:28:,MCM0:CPU< 1 >
+      Task Instance: compute-c1-039-p:29:,MCM0:CPU< 2 >
+      Task Instance: compute-c1-044-p:30:,MCM1:CPU< 8 >
+      Task Instance: compute-c1-044-p:31:,MCM1:CPU< 9 >
+      Task Instance: compute-c1-044-p:32:,MCM1:CPU< 10 >
+      Task Instance: compute-c1-044-p:33:,MCM1:CPU< 11 >
+      Task Instance: compute-c1-044-p:34:,MCM1:CPU< 12 >
+      Task Instance: compute-c1-044-p:35:,MCM1:CPU< 13 >
+      Task Instance: compute-c1-044-p:36:,MCM1:CPU< 14 >
+      Task Instance: compute-c1-044-p:37:,MCM1:CPU< 15 >
+      Task Instance: compute-c1-044-p:38:,MCM0:CPU< 1 >
+      Task Instance: compute-c1-044-p:39:,MCM0:CPU< 2 >
+--------------------------------------------------------------------------------
+
