@@ -5,3 +5,5 @@
 
 # Compiled Python code
 *.pyc
+
+build
