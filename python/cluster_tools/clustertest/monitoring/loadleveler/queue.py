@@ -1,5 +1,6 @@
 import re, os, time
 import clustertest.monitoring.loadleveler.config as config
+import clustertest.config as clusterconfig
 import clustertest.util.system_call as syscall
 from clustertest.util.stringutil import strip_lines
 from clustertest.util.stringutil import extract
@@ -9,7 +10,8 @@ class Queue:
   _llq_output = ''
 
   def __init__(self):
-    (stdout,stderr,rc) = syscall.execute('%s -l' % config.llq)
+    command = '%s -l' % config.llq
+    (stdout,stderr,rc) = syscall.execute('%s %s' % (clusterconfig.scheduler_command_prefix, command))
     self._llq_output = strip_lines(stdout)
 
   def get_active_jobs(self, user=''):
@@ -38,7 +40,7 @@ class Queue:
           # new format: Mon Mar 12 18:52:43 2012
           start_time = extract(ll_job, 'Dispatch Time:', '\n')
           try:
-            t = time.strptime(start_time, '%a %d %b %Y %I:%M:%S %p %Z')
+            t = time.strptime(start_time, '%a %d %b %Y %H:%M:%S %Z')
           except:
             t = time.strptime(start_time, '%a %b %d %H:%M:%S %Y')
           job['start_time'] = time.strftime('%m/%d %H:%M:%S',t)
@@ -71,7 +73,7 @@ class Queue:
           # new format: Mon Mar 12 18:52:43 2012
           queue_time = extract(ll_job, 'Queue Date:', '\n')
           try:
-            t = time.strptime(queue_time, '%a %d %b %Y %I:%M:%S %p %Z')
+            t = time.strptime(queue_time, '%a %d %b %Y %H:%M:%S %p %Z')
           except:
             t = time.strptime(queue_time, '%a %b %d %H:%M:%S %Y')
           job['queued_time'] = time.strftime('%m/%d %H:%M:%S',t)
