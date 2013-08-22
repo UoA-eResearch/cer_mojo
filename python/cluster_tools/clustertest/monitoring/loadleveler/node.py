@@ -1,6 +1,7 @@
 import re
 import clustertest.util.system_call as syscall
 import clustertest.monitoring.loadleveler.config as config
+import clustertest.config as clusterconfig
 from clustertest.util.stringutil import extract
 from clustertest.monitoring.loadleveler.job import Job as LLJob
 
@@ -13,7 +14,7 @@ class Nodes:
     ''' Get a list of all cluster nodes '''
     node_list = list()
     command = config.llstatus + ' -f %n'
-    (stdout,stderr,rc) = syscall.execute(command)
+    (stdout,stderr,rc) = syscall.execute('%s %s' % (clusterconfig.scheduler_command_prefix, command))
     if stdout == "":
       raise Exception('failed to get node list. stdout empty for command \'%s\'' % command)
     for line in stdout.split('\n')[1:]:
@@ -42,7 +43,7 @@ class Node:
 
     # get information about the node
     command = config.llstatus + ' -r %cpu %m '  + self._nodename
-    (stdout,stderr,rc) = syscall.execute(command)
+    (stdout,stderr,rc) = syscall.execute('%s %s' % (clusterconfig.scheduler_command_prefix, command))
     if stdout == "":
       raise Exception('failed to get node information. stdout empty for command \'%s\'' % command)
     (cores, phys_mem_gb) = stdout.split('!')
@@ -57,7 +58,7 @@ class Node:
     ''' Get ids of the jobs that run on this node '''
     job_ids = set()
     command = '%s -l' % config.llq
-    (stdout,stderr,rc) = syscall.execute(command)
+    (stdout,stderr,rc) = syscall.execute('%s %s' % (clusterconfig.scheduler_command_prefix, command))
     ll_jobs = re.split('===== Job Step .* =====',stdout)
     for ll_job in ll_jobs:
       if len(ll_job) > 0:
