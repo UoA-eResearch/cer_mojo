@@ -1,6 +1,7 @@
 import re
 import cluster.util.system_call as syscall
 import cluster.monitoring.loadleveler_affinity.config as config
+import cluster.config as clusterconfig
 from cluster.monitoring.loadleveler_affinity.job import Job
 from cluster.util.stringutil import extract
 
@@ -14,7 +15,7 @@ class Nodes:
     node_list = list()
     if llstatus_output == '':
       command = config.llstatus + ' -f %n'
-      (stdout,stderr,rc) = syscall.execute(command)
+      (stdout,stderr,rc) = syscall.execute('%s %s' % (clusterconfig.scheduler_command_prefix,command))
       if stdout == "":
         raise Exception('failed to get node list. stdout empty for command \'%s\'' % command)
       llstatus_output = stdout
@@ -45,7 +46,7 @@ class Node:
 
     # get information about the node
     command = config.llstatus + ' -r %cpu %m '  + self._nodename
-    (stdout,stderr,rc) = syscall.execute(command)
+    (stdout,stderr,rc) = syscall.execute('%s %s' % (clusterconfig.scheduler_command_prefix, command))
     if stdout == "":
       raise Exception('failed to get node information. stdout empty for command \'%s\'' % command)
     (cores, phys_mem_gb) = stdout.split('!')
@@ -59,8 +60,8 @@ class Node:
   def get_job_ids(self):
     ''' Get ids of the jobs that run on this node '''
     job_ids = set()
-    command = '%s -l' % config.llq
-    (stdout,stderr,rc) = syscall.execute(command)
+    command = '\'%s -l $(%s | grep -v NQ | grep login1 | cut -d\  -f1)\'' % (config.llq, config.llq)
+    (stdout,stderr,rc) = syscall.execute('%s %s' % (clusterconfig.scheduler_command_prefix, command))
     ll_jobs = re.split('===== Job Step .* =====',stdout)
     for ll_job in ll_jobs:
       if len(ll_job) > 0:
