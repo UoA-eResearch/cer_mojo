@@ -1,5 +1,6 @@
 import re, time
 import clustertest.monitoring.loadleveler_affinity.config as config
+import clustertest.config as clusterconfig
 from clustertest.monitoring.loadleveler_affinity.job import Job as Job
 import clustertest.util.system_call as syscall
 from clustertest.util.stringutil import strip_lines
@@ -11,7 +12,8 @@ class Queue:
 
   def __init__(self, llq_output=''):
     if llq_output == '':
-      (stdout,stderr,rc) = syscall.execute('%s -l' % config.llq)
+      command = '\'%s -l $(%s | grep -v NQ | grep login1 | cut -d\  -f1)\'' % (config.llq, config.llq)
+      (stdout,stderr,rc) = syscall.execute('%s %s' % (clusterconfig.scheduler_command_prefix, command))
       self._llq_output = strip_lines(stdout)
     else:
       self._llq_output = strip_lines(llq_output)
@@ -67,7 +69,7 @@ class Queue:
           # new format: Mon Mar 12 18:52:43 2012
           queue_time = extract(ll_job, 'Queue Date:', '\n')
           try:
-            t = time.strptime(queue_time, '%a %d %b %Y %I:%M:%S %p %Z')
+            t = time.strptime(queue_time, '%a %d %b %Y %H:%M:%S %Z')
           except:
             t = time.strptime(queue_time, '%a %b %d %H:%M:%S %Y')
           job['queued_time'] = time.strftime('%m/%d %H:%M:%S',t)
