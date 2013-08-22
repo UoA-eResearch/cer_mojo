@@ -2,7 +2,7 @@ import sys
 import shlex
 import subprocess
 
-def execute(command_and_args, error_on_stderr=True, error_on_nonzero_rc=True):
+def execute(command_and_args, error_on_stderr=False, error_on_nonzero_rc=True):
   ''' Run a system call '''
   try:
     process = subprocess.Popen(shlex.split(command_and_args), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
