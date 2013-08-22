@@ -58,14 +58,18 @@ class MyHandler(xml.sax.ContentHandler):
     if name == "METRIC":
       attrname = attrs.getValue("NAME")
       if re.match(self.pattern, attrname) and self.save:
-        process = attrs.getValue("VAL")
-        elements = process.split(',')
-        p = {}
-        for element in elements:
-          (key,val) = element.split('=')
-          p[key.strip()] = val.strip()
-        self.processes.append(p)
-
+        value = attrs.getValue("VAL")
+        if value != '':
+          process = value.split('|')
+          p = {}
+          p['pid'] = process[0]
+          p['cmd'] = process[1]
+          p['user'] = process[2]
+          p['%cpu'] = process[3]
+          p['%mem'] = process[4]
+          p['vm'] = process[5]
+          p['vmpeak'] = process[6]
+          self.processes.append(p)
 
 # make sure we have a nodename here
 def valid_nodename(form):
@@ -141,7 +145,6 @@ if valid_nodename(form):
     info += "Note: There might be up to 15s delay to sync the processes belonging to a job<br>"
     info += '<table id="processes" class="tablesorter"><thead><tr>'
     info += '<th><span title="%s">PID</span></th>' % tt['pid']
-    info += '<th><span title="%s">LL job ID</span></th>' % tt['llid']
     info += '<th><span title="%s">User</span></th>' % tt['userId']
     info += '<th><span title="%s">%%CPU</span></th>' % tt['%cpu']
     info += '<th><span title="%s">%%MEM</span></th>' % tt['%mem']
@@ -153,7 +156,6 @@ if valid_nodename(form):
     for p in processes:
       info += '<tr>'
       info += '<td>%s</td>' % p['pid']
-      info += '<td>%s</td>' % p['llid']
       info += '<td>%s</td>' % p['user']
       info += '<td>%s</td>' % p['%cpu']
       info += '<td>%s</td>' % p['%mem']
@@ -188,8 +190,8 @@ print '''Content-Type: text/html
 '''
 
 if not failure: 
-  print "$(\"#jobs\").tablesorter({sortList:[[3,1]], widgets:['zebra']});"
-  print "$(\"#processes\").tablesorter({sortList:[[3,1]], widgets:['zebra']});"
+  print "$(\"#jobs\").tablesorter({sortList:[[2,1]], widgets:['zebra']});"
+  print "$(\"#processes\").tablesorter({sortList:[[2,1]], widgets:['zebra']});"
 else:
   # get cluster node list and display as modal
   node_list = factory.create_nodes_instance().get_node_list()

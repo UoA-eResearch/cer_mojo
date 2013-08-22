@@ -22,7 +22,6 @@ tt = {}
 tt['hostname'] = "Name of the cluster node"
 tt['userId'] = "User ID"
 tt['pid'] = "Process ID"
-tt['llid'] = "LoadLeveler job ID"
 tt['cmd'] = "The command name of this process, without arguments"
 tt['%cpu'] = "The percentage of available CPU cycles occupied by this process. This is always an approximate figure, which is more accurate for longer running processes"
 tt['%mem'] = "The percentage of physical memory occupied by this process"
@@ -42,14 +41,19 @@ class MyHandler(xml.sax.ContentHandler):
     if name == "METRIC":
       attrname = attrs.getValue("NAME")
       if re.match(self.pattern, attrname):
-        process = attrs.getValue("VAL")
-        elements = process.split(',')
-        p = {}
-        for element in elements:
-          (key,val) = element.split('=')
-          p[key.strip()] = val.strip()
-        p['hostname'] = self.hostname
-        self.processes.append(p)
+        value = attrs.getValue("VAL")
+        if value != '':
+          process = value.split('|')
+          p = {}
+          p['pid'] = process[0]
+          p['cmd'] = process[1]
+          p['user'] = process[2]
+          p['%cpu'] = process[3]
+          p['%mem'] = process[4]
+          p['vm'] = process[5]
+          p['vmpeak'] = process[6]
+          p['hostname'] = self.hostname
+          self.processes.append(p)
 
 
 # read header from file
@@ -73,7 +77,6 @@ try:
   info += '<table id="processes" class="tablesorter"><thead><tr>'
   info += '<th><span title="%s">Cluster node</span></th>' % tt['hostname']
   info += '<th><span title="%s">PID</span></th>' % tt['pid']
-  info += '<th><span title="%s">LL ID</span></th>' % tt['llid']
   info += '<th><span title="%s">User</span></th>' % tt['userId']
   info += '<th><span title="%s">%%CPU</span></th>' % tt['%cpu']
   info += '<th><span title="%s">%%MEM</span></th>' % tt['%mem']
@@ -86,7 +89,6 @@ try:
     info += '<tr>'
     info += '<td>%s</td>' % p['hostname']
     info += '<td>%s</td>' % p['pid']
-    info += '<td>%s</td>' % p['llid']
     info += '<td>%s</td>' % p['user']
     info += '<td>%s</td>' % p['%cpu']
     info += '<td>%s</td>' % p['%mem']

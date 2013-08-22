@@ -44,10 +44,11 @@ class MyHandler(xml.sax.ContentHandler):
         self.hostdict[self.hosttmp][attrname] = attrs.getValue("VAL")
       if "ps-" in attrname:
         val = attrs.getValue("VAL")
-        percent_cpu = float(re.search('%cpu=(.+?),', val).group(1))
-        self.hostdict[self.hosttmp]['num_processes'] += int(((percent_cpu - self.cpu_usage_threshold)/100)+1)
-        if percent_cpu > self.weak_processes_lower_threshold and percent_cpu < self.weak_processes_upper_threshold:
-          self.hostdict[self.hosttmp]['num_weak_processes'] += 1
+        if val != '':
+          percent_cpu = float(val.split('|')[3])
+          self.hostdict[self.hosttmp]['num_processes'] += int(((percent_cpu - self.cpu_usage_threshold)/100)+1)
+          if percent_cpu > self.weak_processes_lower_threshold and percent_cpu < self.weak_processes_upper_threshold:
+            self.hostdict[self.hosttmp]['num_weak_processes'] += 1
 
 try:
   mode = ''
@@ -113,6 +114,7 @@ try:
   colcount = 0
   overloaded_hosts = []
   hosts_with_low_performing_processes = []
+  failed_hosts = ''
 
   for host in hostlist:
     if colcount == 0:
@@ -132,6 +134,7 @@ try:
       tooltip = "Host: %s\n(Error gathering metrics)" % (host)
       cpu_usage = 0
       mem_usage = 0
+      failed_hosts += '%s ' % host
     
     if showcpu:
       color_index = int(round(cpu_usage * 10))
@@ -197,7 +200,7 @@ try:
 
 
   if error:
-    info += "<font color='red'><b>There was an error gathering information from Ganglia. The information in the heatmap is incomplete</b></font>"
+    info += "<font color='red'><b>There was an error gathering information for the following hosts from Ganglia:</b></font><br>%s" % failed_hosts
  
 except:
   info += "Failed to create heatmap:<br><pre>%s</pre>" % traceback.format_exc()
