@@ -1,6 +1,7 @@
 import time
 import clustertest.util.system_call as syscall
-import clustertest.monitoring.loadleveler.config as config
+import clustertest.monitoring.loadleveler_affinity.config as config
+import clustertest.config as clusterconfig
 import clustertest.util.timeutil as timeutil
 from clustertest.util.stringutil import extract
 from clustertest.util.stringutil import strip_lines
@@ -19,7 +20,7 @@ class Job:
       # get information about the job using the scheduler command
       self._jobid = jobid 
       command = '%s -l %s' % (config.llq, self._jobid)
-      (stdout,stderr,rc) = syscall.execute(command)
+      (stdout,stderr,rc) = syscall.execute('%s %s' % (clusterconfig.scheduler_command_prefix, command))
       if "There is currently no job status to report" in stdout:
         raise Exception("job %s doesn't exist" % self._jobid) 
       if stdout == "":
@@ -106,7 +107,7 @@ class Job:
     # format: Mon 12 Mar 2012 09:52:43 PM NZDT
     # new format: Mon Mar 12 18:52:43 2012
     try:
-      t = time.strptime(t, '%a %d %b %Y %I:%M:%S %p %Z')
+      t = time.strptime(t, '%a %d %b %Y %H:%M:%S %p %Z')
     except:
       t = time.strptime(t, '%a %b %d %H:%M:%S %Y')
     t = time.strftime('%Y/%m/%d %H:%M:%S',t)
@@ -120,7 +121,7 @@ class Job:
       # format: Mon 12 Mar 2012 09:52:43 PM NZDT
       # new format: Mon Mar 12 18:52:43 2012
       try:
-        t = time.strptime(t, '%a %d %b %Y %I:%M:%S %p %Z')
+        t = time.strptime(t, '%a %d %b %Y %H:%M:%S %Z')
       except:
         t = time.strptime(t, '%a %b %d %H:%M:%S %Y')
       start_time = time.strftime('%Y/%m/%d %H:%M:%S',t)
@@ -154,9 +155,9 @@ class Job:
       tmpval = float(val[0:-2])
       unit = val[-2:len(val)]
       if unit.lower() == 'mb':
-        tmpval = float(val)/1024
+        tmpval = float(tmpval)/1024
       elif unit.lower() == 'kb':
-        tmpval = float(val)/(1024*1024)
+        tmpval = float(tmpval)/(1024*1024)
       mem['value'] = '%.3f' % tmpval
     return mem  
     
