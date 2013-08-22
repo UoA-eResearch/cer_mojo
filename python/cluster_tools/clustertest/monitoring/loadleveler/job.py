@@ -1,6 +1,7 @@
 import time
 import clustertest.util.system_call as syscall
 import clustertest.monitoring.loadleveler.config as config
+import clustertest.config as clusterconfig
 import clustertest.util.timeutil as timeutil
 from clustertest.util.stringutil import extract
 from clustertest.util.stringutil import strip_lines
@@ -19,7 +20,7 @@ class Job:
 
     # get information about the job
     command = '%s -l %s' % (config.llq, self._jobid)
-    (stdout,stderr,rc) = syscall.execute(command)
+    (stdout,stderr,rc) = syscall.execute('%s %s' % (clusterconfig.scheduler_command_prefix, command))
     if "There is currently no job status to report" in stdout:
       raise Exception("job %s doesn't exist" % self._jobid) 
     if stdout == "":
