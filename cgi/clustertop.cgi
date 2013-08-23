@@ -8,13 +8,13 @@ import datetime
 import cgi
 import cgitb
 import xml.sax
-import cluster.util.factory as factory
+import cStringIO
 from cluster import config
 import cluster.util.system_call as systemcall
 
 cgitb.enable()
 form = cgi.FieldStorage()
-info = ''
+info = cStringIO.StringIO()
 failure = False
 
 # tooltips
@@ -58,7 +58,7 @@ class MyHandler(xml.sax.ContentHandler):
 
 # read header from file
 f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
-info += f.read() % config.ganglia_main_page
+info.write(f.read() % config.ganglia_main_page)
 f.close()
 
 try:
@@ -70,35 +70,34 @@ try:
   # parse XML
   handler = MyHandler()
   xml.sax.parseString(stdout, handler)
-    
   processes = handler.processes
   
-  info += '<b>User processes on the cluster</b>:<br>'
-  info += '<table id="processes" class="tablesorter"><thead><tr>'
-  info += '<th><span title="%s">Cluster node</span></th>' % tt['hostname']
-  info += '<th><span title="%s">PID</span></th>' % tt['pid']
-  info += '<th><span title="%s">User</span></th>' % tt['userId']
-  info += '<th><span title="%s">%%CPU</span></th>' % tt['%cpu']
-  info += '<th><span title="%s">%%MEM</span></th>' % tt['%mem']
-  info += '<th><span title="%s">vm [kB]</span></th>' % tt['vm']
-  info += '<th><span title="%s">Peak vm [kB]</span></th>' % tt['vmpeak']
-  info += '<th><span title="%s">Command</span></th>' % tt['cmd']
-  info += '</tr></thead><tbody>'
+  info.write('<b>User processes on the cluster</b>:<br>')
+  info.write('<table id="processes" class="tablesorter"><thead><tr>')
+  info.write('<th><span title="%s">Cluster node</span></th>' % tt['hostname'])
+  info.write('<th><span title="%s">PID</span></th>' % tt['pid'])
+  info.write('<th><span title="%s">User</span></th>' % tt['userId'])
+  info.write('<th><span title="%s">%%CPU</span></th>' % tt['%cpu'])
+  info.write('<th><span title="%s">%%MEM</span></th>' % tt['%mem'])
+  info.write('<th><span title="%s">vm [kB]</span></th>' % tt['vm'])
+  info.write('<th><span title="%s">Peak vm [kB]</span></th>' % tt['vmpeak'])
+  info.write('<th><span title="%s">Command</span></th>' % tt['cmd'])
+  info.write('</tr></thead><tbody>')
   
   for p in processes:
-    info += '<tr>'
-    info += '<td>%s</td>' % p['hostname']
-    info += '<td>%s</td>' % p['pid']
-    info += '<td>%s</td>' % p['user']
-    info += '<td>%s</td>' % p['%cpu']
-    info += '<td>%s</td>' % p['%mem']
-    info += '<td>%s</td>' % p['vm']
-    info += '<td>%s</td>' % p['vmpeak']
-    info += '<td>%s</td>' % p['cmd']
-    info += '</tr>'
-  info += '</tbody></table>'    
+    info.write('<tr>')
+    info.write('<td>%s</td>' % p['hostname'])
+    info.write('<td>%s</td>' % p['pid'])
+    info.write('<td>%s</td>' % p['user'])
+    info.write('<td>%s</td>' % p['%cpu'])
+    info.write('<td>%s</td>' % p['%mem'])
+    info.write('<td>%s</td>' % p['vm'])
+    info.write('<td>%s</td>' % p['vmpeak'])
+    info.write('<td>%s</td>' % p['cmd'])
+    info.write('</tr>')
+  info.write('</tbody></table>')
 except:
-  info = "Failed to gather node information:<br><pre>%s</pre>" % traceback.format_exc()
+  info.write("Failed to gather node information:<br><pre>%s</pre>" % traceback.format_exc())
   failure = True
 
 # print response
@@ -125,7 +124,7 @@ print '''
 <body>
 '''
 
-print info
+print info.getvalue()
+info.close()
 
 print "</div></body></html>"
-
