@@ -9,16 +9,73 @@ import xml.sax
 import math
 import shlex
 import subprocess
+import cStringIO
 from cluster import config
 import cluster.util.system_call as systemcall
 
 cgitb.enable()
 form = cgi.FieldStorage()
-info = ''
-
-colormap = [ '#ffffff', '#ffe6e5', '#ffcdcd', '#ffb4b4', '#ff9b9b', '#ff8282', '#ff6969', '#ff5050', '#ff3737', '#ff1e1e', '#ff0000', '#c40606' ]
-
+colormaps = { 'cpu': [ '#ffffff', '#ffe6e5', '#ffcdcd', '#ffb4b4', '#ff9b9b', '#ff8282', '#ff6969', '#ff5050', '#ff3737', '#ff1e1e', '#ff0000', '#eeee00' ],
+              'mem': [ '#ffffff', '#e6e5ff', '#cdcdff', '#b4b4ff', '#9b9bff', '#8282ff', '#6969ff', '#5050ff', '#3737ff', '#1e1eff', '#0000ff', '#eeee00' ] }
 reload_interval_ms = 60000
+failed_hosts = ''
+overloaded_hosts = []
+info = cStringIO.StringIO()
+error = False
+
+def createHeatmap(hostlist, category):
+  global overloaded_hosts
+  global failed_hosts
+  global error
+  html = cStringIO.StringIO()
+  html.write('<table class="heatmap">')
+  colcount = 0
+
+  for host in hostlist:
+    if colcount == 0:
+      html.write('<tr>')
+    if colcount != 0 and (colcount % numcols) == 0:
+      html.write('</tr><tr>')
+
+    values = handler.hostdict[host]
+    try:
+      if category == 'cpu':
+        tooltip = "Host: %s\nCPU cores: %s\nNumber processes: %s" % (host, values['cpu_num'], values['num_processes'])
+        usage = float(values['num_processes']) / int(values['cpu_num'])
+        if float(values['num_processes']) > (float(values['cpu_num'])):
+          overloaded_hosts.append({ 'node': host, 'numprocs': values['num_processes'], 'cpus': values['cpu_num'], 'overload': (float(values['num_processes']) - float(values['cpu_num'])) })
+      elif category == 'mem':
+        tooltip = "Host: %s\nMem total: %s\nMem free: %s" % (host, values['mem_total'], values['mem_free'])
+        usage = (float(values['mem_total']) - int(values['mem_free'])) / int(values['mem_total'])
+    except KeyError:
+      error = True
+      tooltip = "Host: %s\n(Error gathering metrics)" % (host)
+      usage = 0
+      if host not in failed_hosts:
+        failed_hosts += '%s ' % host
+
+    color_index = int(round(usage * 10))
+    if color_index > 10:
+      color_index = 11
+
+    if category == 'cpu':
+      color = colormaps['cpu'][color_index]
+    else:
+      color = colormaps['mem'][color_index]
+
+    html.write('<td class="heatmap"><div onclick="location.href=\'./shownode.cgi?nodename=%s\'" title="%s" style="width:17px; height:17px; float:left; background:%s; cursor: pointer;"></div></td>' % (host, tooltip, color))
+  
+    colcount += 1
+
+  while colcount < (numcols * numrows):
+    html.write('<td class="heatmap">&nbsp;</td>')
+    colcount += 1
+
+  html.write('</tr></table>')
+  tmp = html.getvalue();
+  html.close()
+  return tmp
+
 
 # Parsing handler for SAX events 
 class MyHandler(xml.sax.ContentHandler):
@@ -51,13 +108,10 @@ class MyHandler(xml.sax.ContentHandler):
             self.hostdict[self.hosttmp]['num_weak_processes'] += 1
 
 try:
-  mode = ''
   error = False
   showcpumem = False
   showcpu = False
   showmem = False
-  if form.has_key('mode') and form['mode'].value == 'naked':
-    mode = form['mode'].value
   if form.has_key('show'):
     if form['show'].value == 'cpumem':
       showcpumem = True
@@ -66,11 +120,10 @@ try:
     elif form['show'].value == 'mem':
       showmem = True
 
-  if mode != 'naked':
-    # read header from file
-    f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
-    info += f.read() % config.ganglia_main_page
-    f.close()
+  # read header from file
+  f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
+  info.write(f.read() % config.ganglia_main_page)
+  f.close()
 
   # get all information in XML format from ganglia gmond via netcat
   (stdout,stderr,rc) = systemcall.execute("nc %s %s" % (config.ganglia_gmond_aggregator, config.ganglia_gmond_port))
@@ -88,86 +141,28 @@ try:
   if (numcols * numrows) != numhosts:
     numrows += 1
 
-  # print information
-  cpumem_selected = ''
-  cpu_selected = ''
-  mem_selected = ''
-  if showcpu:
-    cpu_selected = 'selected="selected"'
-  elif showmem:
-    mem_selected = 'selected="selected"'
-  else:
-    cpumem_selected = 'selected="selected"'
-    
-  info += '''<form id='myform'>
-      <select id="checker" onChange="reload()">
-        <option value="cpumem" %s>Show system load and memory utilization</option>
-        <option value="cpu" %s>Show system load only</option>
-        <option value="mem" %s>Show memory utilization only</option>
-      </select>
-    </form>''' % (cpumem_selected, cpu_selected, mem_selected)
-    
-  if mode != "naked":
-    info += '<table cellpadding="10"><tr><td>'
+  info.write('<table cellpadding="10"><tr>')
+  info.write('<td><b>CPU utilization</b><br>')
+  info.write(createHeatmap(hostlist,'cpu'))
+  info.write('</td>')
+  info.write('<td><b>Memory utilization</b><br>')
+  info.write(createHeatmap(hostlist,'mem'))
+  info.write('</td>')
+  info.write('''<td><br>
+    These maps gives an overview of the cluster utilization.<br>Each square represents a cluster machine.<br>
+    The color of a square represents the utilization of a cluster machine. The color encoding is
+    <ul><li>white == no/low utilization</li><li>red/blue == high utilization</li><li>yellow == overloaded</li></ul>
+    Note that this map represents the real utilization, and not the requested/scheduled utilisation.<br>
+    Mouse over the squares to get more details about the machine.''')
+  if error:
+    info.write("<br><br><font color='red'><b>There was an error gathering information for the following hosts from Ganglia:</b></font><br>%s" % failed_hosts)
+  info.write('</td></tr></table>')
 
-  info += '<table class="heatmap">'
-  colcount = 0
-  overloaded_hosts = []
-  hosts_with_low_performing_processes = []
-  failed_hosts = ''
-
-  for host in hostlist:
-    if colcount == 0:
-      info += '<tr>'
-    if colcount != 0 and (colcount % numcols) == 0:
-      info += '</tr><tr>'
-    
-    values = handler.hostdict[host] 
-    try:
-      tooltip = "Host: %s\nCPU cores: %s\nNumber processes: %s\nMem total: %s\nMem free: %s" % (host, values['cpu_num'], values['num_processes'], values['mem_total'], values['mem_free'])
-      cpu_usage = float(values['num_processes']) / int(values['cpu_num']) 
-      mem_usage = (float(values['mem_total']) - int(values['mem_free'])) / int(values['mem_total'])
-      if float(values['num_processes']) > (float(values['cpu_num'])+1):
-        overloaded_hosts.append({ 'node': host, 'numprocs': values['num_processes'], 'cpus': values['cpu_num'], 'overload': (float(values['num_processes']) - float(values['cpu_num'])) })
-    except KeyError:
-      error = True
-      tooltip = "Host: %s\n(Error gathering metrics)" % (host)
-      cpu_usage = 0
-      mem_usage = 0
-      failed_hosts += '%s ' % host
-    
-    if showcpu:
-      color_index = int(round(cpu_usage * 10))
-    elif showmem:
-      color_index = int(round(mem_usage * 10))
-    else:
-      # create euclidian distance of cpu_usage and mem_usage to get the color_index
-      color_index = int(round(math.sqrt(cpu_usage * cpu_usage + mem_usage * mem_usage) * 10))
-
-    if color_index > 10:
-      color_index = 11
-      
-    info += '<td class="heatmap"><div onclick="location.href=\'./shownode.cgi?nodename=%s\'" title="%s" style="width:30px; height:30px; float:left; background:%s; cursor: pointer;"></div></td>' % (host, tooltip, colormap[color_index])
-    colcount += 1
-
-  while colcount < (numcols * numrows):
-    info += '<td>&nbsp;</td>'
-    colcount += 1
-
-  info += '</tr></table>'
-  if mode != 'naked':
-    info += '''</td><td>
-      This map gives an overview of the cluster utilization.<br>Each square represents a cluster machine.<br>
-      The color of a square represents the utilization of a cluster machine.
-      If you show both system load and memory utilization the euclidian metric of both values is used.<br> 
-      The color encoding is
-      <ul><li>white == no/low utilization</li><li>red == high utilization</li></ul>
-      Note that this map represents the real utilization, and not the requested/scheduled utilisation.<br><br>
-      Mouse over the squares to get more details about the machine.'''
-
+  info.write('<table cellpadding="30"><tr>')
   # overloaded_hosts:
-  info += '<br><br><b>Cluster nodes where more processes/threads run than CPU cores available</b>:<br>'
-  info += '''<table id="overloaded_nodes_table" class="tablesorter">
+  info.write('<td>')
+  info.write('<b>Cluster nodes where more processes/threads run than CPU cores available</b><br>')
+  info.write('''<table id="overloaded_nodes_table" class="tablesorter">
     <thead>
       <tr>
         <th>Node</th>
@@ -176,34 +171,33 @@ try:
         <th>#CPU cores</th>
       </tr>
     </thead>
-    <tbody>'''
+    <tbody>''')
   for node in overloaded_hosts:
-   info += '<tr><td><a href="./shownode.cgi?nodename=%s">%s</a></td><td>%s</td><td>%s</td><td>%s</td></tr>' % (node['node'], node['node'], node['overload'], node['numprocs'], node['cpus'])
-  info += '</tbody></table>'
+    info.write('<tr><td><a href="./shownode.cgi?nodename=%s">%s</a></td><td>%s</td><td>%s</td><td>%s</td></tr>' % (node['node'], node['node'], node['overload'], node['numprocs'], node['cpus']))
+  info.write('</tbody></table>')
+  info.write('</td>')
 
   # hosts where weak processes run:
-  info += '<br><br><b>Cluster nodes where processes run that have CPU usage between 5% and 60%</b>:<br>'
-  info += '''<table id="nodes_with_weak_processes_table" class="tablesorter">
+  info.write('<td>')
+  info.write('<b>Cluster nodes where processes run that have CPU usage between 5% and 60%</b><br>')
+  info.write('''<table id="nodes_with_weak_processes_table" class="tablesorter">
     <thead>
       <tr>
         <th>Node</th>
         <th>#Processes</th>
       </tr>
     </thead>
-    <tbody>'''
+    <tbody>''')
   for key in handler.hostdict:
     if handler.hostdict[key]['num_weak_processes'] > 0:
-      info += '<tr><td><a href="./shownode.cgi?nodename=%s">%s</a></td><td>%s</td></tr>' % (key,key,handler.hostdict[key]['num_weak_processes'])
-  info += '</tbody></table>'
+      info.write('<tr><td><a href="./shownode.cgi?nodename=%s">%s</a></td><td>%s</td></tr>' % (key,key,handler.hostdict[key]['num_weak_processes']))
+  info.write('</tbody></table>')
+  info.write('</td>')
+  info.write('</tr></table>')
 
-  info += '</td></tr></table>'
-
-
-  if error:
-    info += "<font color='red'><b>There was an error gathering information for the following hosts from Ganglia:</b></font><br>%s" % failed_hosts
  
 except:
-  info += "Failed to create heatmap:<br><pre>%s</pre>" % traceback.format_exc()
+  info.write("Failed to create heatmap:<br><pre>%s</pre>" % traceback.format_exc())
 
 # print response
 print '''Content-Type: text/html
@@ -226,22 +220,7 @@ print '''Content-Type: text/html
       });
 
       function reload() {
-        var have_qs = window.location.href.indexOf("?");
-        var mode = (window.location.href.indexOf("mode=naked") > -1) ? "naked" : "";
-        var url = (have_qs===-1) ? window.location.href : window.location.href.substr(0,have_qs);
-        var myselect = document.getElementById("checker");
-        var selected_val = myselect.options[myselect.selectedIndex].value;
-        if (selected_val == "cpu") {
-          url += '?show=cpu';
-        } else if (selected_val == "mem") {
-          url += '?show=mem';
-        } else {
-          url += '?show=cpumem';        
-        }
-        if (mode == 'naked') {
-          url += "&mode=naked";
-        }
-        window.location.href = url;
+        window.location.href = window.location.href;
       }
 
       function refresh() {
@@ -252,6 +231,7 @@ print '''Content-Type: text/html
   </head>
   <body>''' % reload_interval_ms
 
-print info
+print info.getvalue()
+info.close()
 
 print "</div></body></html>"
