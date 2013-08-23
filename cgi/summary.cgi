@@ -19,13 +19,11 @@ def check_user(username):
     users[username] = {}
     users[username]['running'] = 0
     users[username]['idle'] = 0
-    users[username]['blocked'] = 0
 
 try:
   queue = factory.create_queue_instance()
   active_jobs = queue.get_active_jobs()
   idle_jobs = queue.get_idle_jobs()
-  blocked_jobs = queue.get_blocked_jobs()
 
   # Create per user overview
   for job in active_jobs:
@@ -36,10 +34,6 @@ try:
     check_user(job['user'])
     users[job['user']]['idle'] += 1
 
-  for job in blocked_jobs:
-    check_user(job['user'])
-    users[job['user']]['blocked'] += 1
-
   # read header from file
   f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
   info += f.read() % config.ganglia_main_page
@@ -47,10 +41,9 @@ try:
 
   info += '<h2>Summary of jobs</h2>'
   info += '<table>'
-  info += '<tr><td><b>Total number of jobs</b>:</td><td>%d</td></tr>' % (len(active_jobs) + len(idle_jobs) + len(blocked_jobs))
+  info += '<tr><td><b>Total number of jobs</b>:</td><td>%d</td></tr>' % (len(active_jobs) + len(idle_jobs))
   info += '<tr><td><b>Running jobs</b>:</td><td>%d</td></tr>' % len(active_jobs)
   info += '<tr><td><b>Queued jobs</b>:</td><td>%d</td></tr>' % len(idle_jobs)
-  info += '<tr><td><b>Blocked jobs</b>:</td><td>%d</td></tr>' % len(blocked_jobs)
   info += '</table>'
   info += '''<table id="usertable" class="tablesorter">
     <thead>
@@ -58,7 +51,6 @@ try:
         <th>User</th>
         <th>Running Jobs</th>
         <th>Queued Jobs</th>
-        <th>Blocked Jobs</th>
       </tr>
     </thead>
     <tbody>'''
@@ -68,7 +60,6 @@ try:
     info += '<td><a href="./showq.cgi?user=%s">%s</a></td>' % (user,user)
     info += '<td>%s</td>' % map['running']
     info += '<td>%s</td>' % map['idle']
-    info += '<td>%s</td>' % map['blocked']
     info += '</tr>'
 
   info += '</tbody></table>'
