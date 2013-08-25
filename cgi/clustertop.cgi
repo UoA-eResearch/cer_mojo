@@ -33,7 +33,9 @@ class MyHandler(xml.sax.ContentHandler):
   hostname = ''
   pattern = r'ps-[0-9]+$'
   processes = []
-  
+  cpu_threshold = 0.5
+  memory_threshold = 0.5
+
   def startElement(self, name, attrs):
     if name == "HOST":
       self.hostname = attrs.getValue("NAME")
@@ -44,17 +46,20 @@ class MyHandler(xml.sax.ContentHandler):
         value = attrs.getValue("VAL")
         if value != '':
           process = value.split('|')
-          p = {}
-          p['pid'] = process[0]
-          p['cmd'] = process[1]
-          p['user'] = process[2]
-          p['%cpu'] = process[3]
-          p['%mem'] = process[4]
-          p['vm'] = process[5]
-          p['vmpeak'] = process[6]
-          p['hostname'] = self.hostname
-          self.processes.append(p)
+          if float(process[3]) > self.cpu_threshold or float(process[4]) > self.memory_threshold:
+            p = {}
+            p['pid'] = process[0]
+            p['cmd'] = process[1]
+            p['user'] = process[2]
+            p['%cpu'] = process[3]
+            p['%mem'] = process[4]
+            p['vm'] = process[5]
+            p['vmpeak'] = process[6]
+            p['hostname'] = self.hostname
+            self.processes.append(p)
 
+  def getProcessesSortedByHost(self):
+    return sorted(self.processes, key=lambda x: x['hostname'])
 
 # read header from file
 f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
@@ -70,9 +75,10 @@ try:
   # parse XML
   handler = MyHandler()
   xml.sax.parseString(stdout, handler)
-  processes = handler.processes
+  processes = handler.getProcessesSortedByHost()
   
   info.write('<b>User processes on the cluster</b>:<br>')
+  info.write('(Only processes that have more than %s%% CPU usage or use more than %s%% of the available memory are shown)<br>' % (handler.cpu_threshold, handler.memory_threshold))
   info.write('<table id="processes" class="tablesorter"><thead><tr>')
   info.write('<th><span title="%s">Cluster node</span></th>' % tt['hostname'])
   info.write('<th><span title="%s">PID</span></th>' % tt['pid'])
