@@ -80,7 +80,7 @@ def createHeatmap(hostlist, category):
 # Parsing handler for SAX events 
 class MyHandler(xml.sax.ContentHandler):
   hostdict = {}
-  subnets = ["10.0.102", "10.0.103", "10.0.104", "10.0.105", "10.0.111"]
+  subnets = ["10.0.102", "10.0.103", "10.0.104", "10.0.105", "10.0.106", "10.0.111"]
   hosttmp = ''
   iptmp = ''
   cpu_usage_threshold = 4
