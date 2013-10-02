@@ -1,29 +1,40 @@
 #!/usr/bin/python
 
-import re
 import os
 import traceback
 import cgi
 import cgitb
 import xml.sax
 import math
-import shlex
-import subprocess
 import cStringIO
 from cluster import config
 import cluster.util.system_call as systemcall
 
 cgitb.enable()
 form = cgi.FieldStorage()
-colormaps = { 'cpu': [ '#ffffff', '#ffe6e5', '#ffcdcd', '#ffb4b4', '#ff9b9b', '#ff8282', '#ff6969', '#ff5050', '#ff3737', '#ff1e1e', '#ff0000', '#eeee00' ],
-              'mem': [ '#ffffff', '#e6e5ff', '#cdcdff', '#b4b4ff', '#9b9bff', '#8282ff', '#6969ff', '#5050ff', '#3737ff', '#1e1eff', '#0000ff', '#eeee00' ] }
-reload_interval_ms = 60000
+colormaps = { 'default': [ '#ffffff', '#ffe6e6', '#ffcdcd', '#ffb4b4', '#ff9b9b', '#ff8282', '#ff6969', '#ff5050', '#ff3737', '#ff1e1e', '#ff0000', '#eeee00' ],
+              'dev_under': [ '#e6ffe6', '#cdffcd', '#b4ffb4', '#9bff9b', '#82ff82', '#69ff69', '#50ff50', '#37ff37', '#1eff1e', '#06ff06', '#00ff00' ],
+              'dev_over': [ '#ffe6e6', '#ffcdcd', '#ffb4b4', '#ff9b9b', '#ff8282', '#ff6969', '#ff5050', '#ff3737', '#ff1e1e', '#ff0606', '#ff0000' ] }
+views = {
+  'cpusused': 'CPU cores: actual usage',
+  'cpusreq': 'CPU cores: requested usage',
+  'cpusdeviation': 'CPU cores: discrepancy used vs requested',
+  'memused': 'Memory: actual usage',
+  'memreq': 'Memory: requested usage',
+  'memdeviation': 'Memory: discrepancy used vs requested',
+  'vmemused': 'Virtual memory: actual usage',
+  'vmemreq': 'Virtual memory: requested usage',
+  'vmemdeviation': 'Virtual memory: Discrepancy used vs requested',
+}
+reload_interval_ms = 180000
+hosts = {}
 failed_hosts = ''
 overloaded_hosts = []
 info = cStringIO.StringIO()
 error = False
 
-def createHeatmap(hostlist, category):
+def createHeatmap(category):
+  global hosts
   global overloaded_hosts
   global failed_hosts
   global error
@@ -32,43 +43,80 @@ def createHeatmap(hostlist, category):
   colcount = 0
 
   for host in hostlist:
+    values = hosts[host]
     if colcount == 0:
       html.write('<tr>')
     if colcount != 0 and (colcount % numcols) == 0:
       html.write('</tr><tr>')
-
-    values = handler.hostdict[host]
+    tooltip = "Host: %s\n\nCPUs: %s\nCPUs requested: %s\nCPUs used: %s\n\nMemory [MB]: %.2f\nMemory requested [MB]: %.2f\nMemory used [MB]: %.2f\n\nVirtual Memory [MB]: %.2f\nVirtual Memory requested [MB]: %.2f\nVirtual Memory used [MB]: %.2f" % (
+              host, values['cpus'], values['cpusreq'], values['cpusused'], values['mem_mb'], values['memreq_mb'], values['memused_mb'], values['vmem_mb'], values['vmemreq_mb'], values['vmemused_mb'])
+    color='#ffffff'
     try:
-      if category == 'cpu':
-        tooltip = "Host: %s\nCPU cores: %s\nNumber processes: %s" % (host, values['cpu_num'], values['num_processes'])
-        usage = float(values['num_processes']) / int(values['cpu_num'])
-        if float(values['num_processes']) > (float(values['cpu_num'])):
-          overloaded_hosts.append({ 'node': host, 'numprocs': values['num_processes'], 'cpus': values['cpu_num'], 'overload': (float(values['num_processes']) - float(values['cpu_num'])) })
-      elif category == 'mem':
-        tooltip = "Host: %s\nMem total: %s\nMem free: %s" % (host, values['mem_total'], values['mem_free'])
-        usage = (float(values['mem_total']) - int(values['mem_free'])) / int(values['mem_total'])
-    except KeyError:
+      if category == 'cpusused':
+        usage = float(values['cpusused']) / values['cpus']
+        if usage > 1:
+          overloaded_hosts.append({ 'node': host, 'numprocs': values['cpusused'], 'cpus': values['cpus'], 'overload': (float(values['cpusused']) - float(values['cpus'])) })
+        color_index = int(round(usage * 10))
+        if color_index > 10:
+          color_index = 11
+        color = colormaps['default'][color_index]
+      elif category == 'cpusreq':
+        usage = float(values['cpusreq']) / int(values['cpus'])
+        color_index = int(round(usage * 10))
+        color = colormaps['default'][color_index]
+      elif category == 'cpusdeviation':
+        usage = float(values['cpusused'] - values['cpusreq']) / values['cpus']
+        color_index = int(round(usage * 10))
+        if color_index < 0:
+          color = colormaps['dev_under'][-color_index]
+        elif color_index > 0:
+          color = colormaps['dev_over'][color_index]
+      elif category == 'memused':
+        usage = float(values['memused_mb'] / values['mem_mb'])
+        color_index = int(round(usage * 10))
+        if color_index > 10:
+          color_index = 11
+        color = colormaps['default'][color_index]
+      elif category == 'memreq':
+        usage = float(values['memreq_mb']) / values['mem_mb']
+        color_index = int(round(usage * 10))
+        color = colormaps['default'][color_index]
+      elif category == 'memdeviation':
+        usage = float(values['memused_mb'] - values['memreq_mb']) / values['mem_mb']
+        color_index = int(round(usage * 10))
+        if color_index < 0:
+          color = colormaps['dev_under'][-color_index]
+        elif color_index > 0:
+          color = colormaps['dev_over'][color_index]
+      elif category == 'vmemused':
+        usage = float(values['memused_mb'] / values['mem_mb'])
+        color_index = int(round(usage * 10))
+        if color_index > 10:
+          color_index = 11
+        color = colormaps['default'][color_index]
+      elif category == 'vmemreq':
+        usage = float(values['vmemreq_mb']) / values['vmem_mb']
+        color_index = int(round(usage * 10))
+        color = colormaps['default'][color_index]
+      elif category == 'vmemdeviation':
+        usage = float(values['vmemused_mb'] - values['vmemreq_mb']) / values['vmem_mb']
+        color_index = int(round(usage * 10))
+        if color_index < 0:
+          color = colormaps['dev_under'][-color_index]
+        elif color_index > 0:
+          color = colormaps['dev_over'][color_index]    
+    except:
       error = True
-      tooltip = "Host: %s\n(Error gathering metrics)" % (host)
       usage = 0
       if host not in failed_hosts:
         failed_hosts += '%s ' % host
+        failed_hosts += str(color_index)
 
-    color_index = int(round(usage * 10))
-    if color_index > 10:
-      color_index = 11
-
-    if category == 'cpu':
-      color = colormaps['cpu'][color_index]
-    else:
-      color = colormaps['mem'][color_index]
-
-    html.write('<td class="heatmap"><div onclick="location.href=\'./shownode.cgi?nodename=%s\'" title="%s" style="width:17px; height:17px; float:left; background:%s; cursor: pointer;"></div></td>' % (host, tooltip, color))
-  
+    html.write('<td class="heatmap"><div onclick="location.href=\'./shownode.cgi?nodename=%s\'" title="%s" style="width:15px; height:15px; float:left; background:%s; cursor: pointer;"></div></td>' % (host, tooltip, color))
     colcount += 1
 
   while colcount < (numcols * numrows):
-    html.write('<td class="heatmap">&nbsp;</td>')
+    html.write('<td class="heatmap"><div style="width:15px; height:15px; float:left;"></div></td>')
     colcount += 1
 
   html.write('</tr></table>')
@@ -76,10 +124,38 @@ def createHeatmap(hostlist, category):
   html.close()
   return tmp
 
+def get_nodes():
+  command = '/home/ganglia/bin/get_nodes'
+  nodes = []
+  (stdout,stderr,rc) = systemcall.execute('%s %s' % (config.scheduler_command_prefix, command))
+  if stdout:
+    nodes = ' '.join(stdout.splitlines(True))
+  return nodes
 
+def get_node_details():
+  command = '/home/ganglia/bin/get_machine_data %s' % get_nodes()
+  nodes = {}
+  (stdout,stderr,rc) = systemcall.execute('%s %s' % (config.scheduler_command_prefix, command))
+  if stdout:
+    lines = stdout.splitlines(True)
+    for line in lines:
+      tokens = line.split('|')
+      nodes[tokens[0]] = {}
+      nodes[tokens[0]]['cpus'] = int(tokens[3])
+      nodes[tokens[0]]['cpusreq'] = int(tokens[3]) - int(tokens[4])
+      nodes[tokens[0]]['cpusused'] = 0
+      nodes[tokens[0]]['mem_mb'] = int(tokens[5])
+      nodes[tokens[0]]['memreq_mb'] = int(tokens[5]) - int(tokens[6])
+      nodes[tokens[0]]['memused_mb'] = 0
+      nodes[tokens[0]]['vmem_mb'] = int(tokens[7])
+      nodes[tokens[0]]['vmemreq_mb'] = int(tokens[7]) - int(tokens[8])
+      nodes[tokens[0]]['vmemused_mb'] = 0
+      nodes[tokens[0]]['num_weak_processes'] = 0
+  return nodes
+  
 # Parsing handler for SAX events 
 class MyHandler(xml.sax.ContentHandler):
-  hostdict = {}
+  global hosts
   subnets = ["10.0.102", "10.0.103", "10.0.104", "10.0.105", "10.0.106", "10.0.111"]
   hosttmp = ''
   iptmp = ''
@@ -91,40 +167,69 @@ class MyHandler(xml.sax.ContentHandler):
     if name == "HOST":
       self.hosttmp = attrs.getValue("NAME")
       self.iptmp = attrs.getValue("IP")
-      if self.hosttmp not in config.ganglia_blacklist and self.iptmp[0:8] in self.subnets:
-        self.hostdict[self.hosttmp] = {}
-        self.hostdict[self.hosttmp]['num_processes'] = 0
-        self.hostdict[self.hosttmp]['num_weak_processes'] = 0
-    if name == "METRIC" and self.iptmp[0:8] in self.subnets:
+    if name == "METRIC" and self.iptmp[0:8] in self.subnets and self.hosttmp in hosts:
       attrname = attrs.getValue("NAME")
-      if self.hosttmp in self.hostdict and (attrname == "mem_free" or attrname == "mem_total" or attrname == "cpu_num"):
-        self.hostdict[self.hosttmp][attrname] = attrs.getValue("VAL")
       if "ps-" in attrname:
         val = attrs.getValue("VAL")
         if val != '':
-          percent_cpu = float(val.split('|')[3])
-          self.hostdict[self.hosttmp]['num_processes'] += int(((percent_cpu - self.cpu_usage_threshold)/100)+1)
-          if percent_cpu > self.weak_processes_lower_threshold and percent_cpu < self.weak_processes_upper_threshold:
-            self.hostdict[self.hosttmp]['num_weak_processes'] += 1
+          try:
+            percent_cpu = float(val.split('|')[3])
+            percent_mem = float(val.split('|')[4])
+            peak_vmem = float(val.split('|')[6])
+            hosts[self.hosttmp]['cpusused'] += int(((percent_cpu - self.cpu_usage_threshold)/100)+1)
+            hosts[self.hosttmp]['memused_mb'] += (percent_mem * hosts[self.hosttmp]['mem_mb']) / 100
+            hosts[self.hosttmp]['vmemused_mb'] += peak_vmem/1024
+            if percent_cpu > self.weak_processes_lower_threshold and percent_cpu < self.weak_processes_upper_threshold:
+              hosts[self.hosttmp]['num_weak_processes'] += 1
+          except:
+            pass
 
 try:
   error = False
-  showcpumem = False
-  showcpu = False
-  showmem = False
-  if form.has_key('show'):
-    if form['show'].value == 'cpumem':
-      showcpumem = True
-    elif form['show'].value == 'cpu':
-      showcpu = True
-    elif form['show'].value == 'mem':
-      showmem = True
+  view1='cpusused'
+  view2='cpusreq'
+  view3='cpusdeviation'
 
+  if form.has_key('view1') and form['view1'].value in views:
+    view1 = form['view1'].value
+  if form.has_key('view2') and form['view2'].value in views:
+    view2 = form['view2'].value
+  if form.has_key('view3') and form['view3'].value in views:
+    view3 = form['view3'].value
+    
+  select1='<select id="view1">'
+  for view in sorted(views.keys()):
+    if view == view1:
+      select1 += '<option value="%s" selected>%s</option>' % (view,views[view])
+    else:
+      select1 += '<option value="%s">%s</option>' % (view,views[view])
+  select1 += '</select>'
+   
+  select2='<select id="view2">'
+  for view in sorted(views.keys()):
+    if view == view2:
+      select2 += '<option value="%s" selected>%s</option>' % (view,views[view])
+    else:
+      select2 += '<option value="%s">%s</option>' % (view,views[view])
+  select2 += '</select>'
+   
+  select3='<select id="view3">'
+  for view in sorted(views.keys()):
+    if view == view3:
+      select3 += '<option value="%s" selected>%s</option>' % (view,views[view])
+    else:
+      select3 += '<option value="%s">%s</option>' % (view,views[view])
+  select3 += '</select>'
+  
+  button = '<button onclick="reload()">Go!</button>'
+  
   # read header from file
   f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
   info.write(f.read() % config.ganglia_main_page)
   f.close()
 
+  hosts = get_node_details()
+  
   # get all information in XML format from ganglia gmond via netcat
   (stdout,stderr,rc) = systemcall.execute("nc %s %s" % (config.ganglia_gmond_aggregator, config.ganglia_gmond_port))
 
@@ -133,7 +238,7 @@ try:
   xml.sax.parseString(stdout, handler)
 
   # figure out table properties (num rows and cols)
-  hostlist = handler.hostdict.keys()
+  hostlist = hosts.keys()
   hostlist.sort()
   numhosts = len(hostlist)
   numcols = int(math.sqrt(numhosts))
@@ -141,22 +246,40 @@ try:
   if (numcols * numrows) != numhosts:
     numrows += 1
 
-  info.write('<table cellpadding="10"><tr>')
-  info.write('<td><b>CPU utilization</b><br>')
-  info.write(createHeatmap(hostlist,'cpu'))
+  info.write('<table cellpadding="5"><tr>')
+  info.write('<td><b>%s</b><br>' % select1)
+  info.write(createHeatmap(view1))
   info.write('</td>')
-  info.write('<td><b>Memory utilization</b><br>')
-  info.write(createHeatmap(hostlist,'mem'))
+  info.write('<td><b>%s</b><br>' % select2)
+  info.write(createHeatmap(view2))
   info.write('</td>')
-  info.write('''<td><br>
-    These maps gives an overview of the cluster utilization.<br>Each square represents a cluster machine.<br>
-    The color of a square represents the utilization of a cluster machine. The color encoding is
-    <ul><li>white == no/low utilization</li><li>red/blue == high utilization</li><li>yellow == overloaded</li></ul>
-    Note that this map represents the real utilization, and not the requested/scheduled utilisation.<br>
-    Mouse over the squares to get more details about the machine.''')
+  info.write('<td><b>%s %s</b><br>' % (select3, button))
+  info.write(createHeatmap(view3))
+  info.write('</td></tr></table>')
+  info.write('''
+    These maps gives an overview of the cluster utilization. Each square represents a cluster machine.
+    The color encoding is
+    <table cellspacing="3">
+      <tr>
+        <td>
+          <b>Usage maps</b>:<br>
+          white: no/low utilization<br>
+          red: high utilization<br>
+          yellow: overloaded<br>
+        </td>
+        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<td>
+        <td>
+          <b>Discrepancy maps</b>:<br>
+          white: actual and requested utilization are the same<br>
+          green: less actual utilization than requested<br>
+          red: higher actual utilization than requested<br>
+        </td>
+      </tr>
+    </table>
+    Mouse over the squares to high-level information about the machine.
+    Click on a square to see details about the machine.''')
   if error:
     info.write("<br><br><font color='red'><b>There was an error gathering information for the following hosts from Ganglia:</b></font><br>%s" % failed_hosts)
-  info.write('</td></tr></table>')
 
   info.write('<table cellpadding="30"><tr>')
   # overloaded_hosts:
@@ -188,9 +311,9 @@ try:
       </tr>
     </thead>
     <tbody>''')
-  for key in handler.hostdict:
-    if handler.hostdict[key]['num_weak_processes'] > 0:
-      info.write('<tr><td><a href="./shownode.cgi?nodename=%s">%s</a></td><td>%s</td></tr>' % (key,key,handler.hostdict[key]['num_weak_processes']))
+  for host in hosts:
+    if hosts[host]['num_weak_processes'] > 0:
+      info.write('<tr><td><a href="./shownode.cgi?nodename=%s">%s</a></td><td>%s</td></tr>' % (host,host,hosts[host]['num_weak_processes']))
   info.write('</tbody></table>')
   info.write('</td>')
   info.write('</tr></table>')
@@ -220,9 +343,12 @@ print '''Content-Type: text/html
       });
 
       function reload() {
-        window.location.href = window.location.href;
+        var view1 = $("#view1 option:selected").val();
+        var view2 = $("#view2 option:selected").val();
+        var view3 = $("#view3 option:selected").val();
+        window.location.href = window.location.pathname + "?view1=" + view1 + "&view2=" + view2 + "&view3=" + view3;
       }
-
+      
       function refresh() {
         window.location.reload(true);
       }
