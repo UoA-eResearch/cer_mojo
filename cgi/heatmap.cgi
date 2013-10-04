@@ -28,7 +28,7 @@ views = {
 }
 reload_interval_ms = 180000
 hosts = {}
-failed_hosts = ''
+failed_hosts = []
 overloaded_hosts = []
 info = cStringIO.StringIO()
 error = False
@@ -109,8 +109,7 @@ def createHeatmap(category):
       error = True
       usage = 0
       if host not in failed_hosts:
-        failed_hosts += '%s ' % host
-        failed_hosts += str(color_index)
+        failed_hosts.append(host)
 
     html.write('<td class="heatmap"><div onclick="location.href=\'./shownode.cgi?nodename=%s\'" title="%s" style="width:15px; height:15px; float:left; background:%s; cursor: pointer;"></div></td>' % (host, tooltip, color))
     colcount += 1
@@ -279,7 +278,7 @@ try:
     Mouse over the squares to high-level information about the machine.
     Click on a square to see details about the machine.''')
   if error:
-    info.write("<br><br><font color='red'><b>There was an error gathering information for the following hosts from Ganglia:</b></font><br>%s" % failed_hosts)
+    info.write("<br><br><font color='red'><b>There was an error gathering information for the following hosts from Ganglia:</b></font><br>%s" % ', '.join(failed_hosts))
 
   info.write('<table cellpadding="30"><tr>')
   # overloaded_hosts:
