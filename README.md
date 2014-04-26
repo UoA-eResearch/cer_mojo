@@ -10,8 +10,7 @@ The project consists of
 * LoadLeveler scheduler adapters to get information about jobs.
 
 
-Installation Instructions
-===
+### Installation Instructions
 
 1. Configure Python package "cluster"
 Configure the LRM in the configuration file python/cluster/cluster/config.py.
@@ -42,14 +41,12 @@ Copy the scripts in cgi/ into the cgi-bin directory of the webserver.
 5. Install the scheduler adapter scripts 
 
 
-Supported Python Versions
-===
+### Supported Python Versions
 
 Tested with Python 2.4. Will probably work with all newer versions of Python.
 
 
-Run tests
-=========
+### Run tests
 
 This project doesn't contain an extensive test suite, but a few test-cases exist for important utility functions.
 
