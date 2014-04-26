@@ -2,7 +2,7 @@ mojo (MOnitor JObs)
 ===
 
 Display information about jobs run on the Auckland NeSI cluster (managed by LoadLeveler) in a web-based format.
-Information about jobs is gathered from scheduler adapater scripts and Ganglia (running processes).
+Information about jobs is gathered from scheduler adapater scripts and Ganglia (see ganglia_ps repository).
 
 The project consists of
 
