@@ -7,5 +7,5 @@ setup(name='cluster_monitoring',
       description='Python Cluster Monitoring Utilities',
       author='Martin Feller',
       author_email='m.feller@auckland.ac.nz',
-      packages=['cluster', 'cluster.util', 'cluster.monitoring', 'cluster.monitoring.loadleveler', 'cluster.monitoring.loadleveler_affinity'],
+      packages=['cluster', 'cluster.util'],
 )
