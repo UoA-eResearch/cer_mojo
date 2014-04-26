@@ -3,10 +3,10 @@
 import os
 import sys
 import traceback
-import itertools as it
 import cgi
 import cgitb
-import cluster.util.factory as factory
+import cStringIO
+from cluster.util import system_call
 from cluster import config
 
 cgitb.enable()
@@ -14,14 +14,11 @@ form = cgi.FieldStorage()
 
 type = 'all'
 user = ''
-info = ''
+info = cStringIO.StringIO()
 active_jobs = []
-idle_jobs = []
-blocked_jobs = []
+queued_jobs = []
 
 try:
-  queue = factory.create_queue_instance()
-
   if form.has_key('type'):
     type = form['type'].value
   if form.has_key('user'):
@@ -29,21 +26,33 @@ try:
 
   # read header from file
   f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
-  info += f.read() % config.ganglia_main_page
+  info.write(f.read() % config.ganglia_main_page)
   f.close()
 
   if user != '':
-    info += '<h2>Jobs of user %s</h2>' % user
+    info.write('<h2>Jobs of user %s</h2>' % user)
 
+  if user == '':
+    command = '/home/ganglia/bin/get_jobs'
+    (stdout,stderr,rc) = system_call.execute('%s %s' % (config.scheduler_command_prefix, command))
+    jobs = stdout.splitlines() 
+  else:
+    command = '/home/ganglia/bin/get_jobs %s' % user
+    (stdout,stderr,rc) = system_call.execute('%s %s' % (config.scheduler_command_prefix, command))
+    jobs = stdout.splitlines() 
+
+  for job in jobs:
+    status = job.split('|')[1]
+    if status == 'R':
+      active_jobs.append(job)
+    elif status == 'I':
+      queued_jobs.append(job)
+    
   ### running jobs
   if type == 'all' or type == 'Running':
-    if user == '':
-      active_jobs = queue.get_active_jobs()
-    else:
-      active_jobs = queue.get_active_jobs(user)
-    info += "<h3>Running Jobs</h3>"
+    info.write("<h3>Running Jobs</h3>")
     if len(active_jobs) > 0:
-      info += '''<table id="running" class="tablesorter">
+      info.write('''<table id="running" class="tablesorter">
         <thead>
           <tr>
             <th>Job ID</th>
@@ -54,31 +63,28 @@ try:
             <th>Start time</th>
           </tr>
         </thead>
-        <tbody>'''
+        <tbody>''')
 
       for job in active_jobs:
-        info += "<tr>"
-        info += "<td><a href=\"./showjob.cgi?jobid=%s\">%s</a></td>" % (job['id'],job['id'])
-        info += "<td><a href=\"./showq.cgi?user=%s\">%s</a></td>" % (job['user'],job['user'])
-        info += "<td>%s</td>" % job['group']
-        info += "<td><a href=\"./shownode.cgi?nodename=%s\">%s</a></td>" % (job['node'],job['node'])
-        info += "<td>%s</td>" % job['cores']
-        info += "<td>%s</td>" % job['start_time']
-        info += "</tr>"
+        tokens = job.split('|')
+        info.write("<tr>")
+        info.write("<td><a href=\"./showjob.cgi?jobid=%s\">%s</a></td>" % (tokens[0],tokens[0]))
+        info.write("<td><a href=\"./showq.cgi?user=%s\">%s</a></td>" % (tokens[2],tokens[2]))
+        info.write("<td>%s</td>" % tokens[3])
+        info.write("<td><a href=\"./shownode.cgi?nodename=%s\">%s</a></td>" % (tokens[5],tokens[5]))
+        info.write("<td>%s</td>" % tokens[4])
+        info.write("<td>%s</td>" % tokens[7])
+        info.write("</tr>")
 
-      info += "</tbody></table>"
+      info.write("</tbody></table>")
     else:
-      info += 'No active jobs.'
+      info.write('No active jobs.')
 
-  ### idle jobs
+  ### queued jobs
   if type == 'all' or type == 'Queued':
-    if user == '':
-      idle_jobs = queue.get_idle_jobs()
-    else:
-      idle_jobs = queue.get_idle_jobs(user)
-    info += "<h3>Queued Jobs</h3>"
-    if len(idle_jobs) > 0:
-      info += '''<table id="idle" class="tablesorter">
+    info.write("<h3>Queued Jobs</h3>")
+    if len(queued_jobs) > 0:
+      info.write('''<table id="queued" class="tablesorter">
         <thead>
           <tr>
             <th>Job ID</th>
@@ -87,50 +93,24 @@ try:
             <th>Requested Cores</th>
             <th>Queued time</th>
           </tr>
-        </thead><tbody>'''
+        </thead><tbody>''')
 
-      for job in idle_jobs:
-        info += "<tr>"
-        info += "<td><a href=\"./showjob.cgi?jobid=%s\">%s</a></td>" % (job['id'],job['id'])
-        info += "<td><a href=\"./showq.cgi?user=%s\">%s</a></td>" % (job['user'],job['user'])
-        info += "<td>%s</td>" % job['group']
-        info += "<td>%s</td>" % job['cores']
-        info += "<td>%s</td>" % job['queued_time']
-        info += "</tr>"
+      for job in queued_jobs:
+        tokens = job.split('|')
+        info.write("<tr>")
+        info.write("<td><a href=\"./showjob.cgi?jobid=%s\">%s</a></td>" % (tokens[0],tokens[0]))
+        info.write("<td><a href=\"./showq.cgi?user=%s\">%s</a></td>" % (tokens[2],tokens[2]))
+        info.write("<td>%s</td>" % tokens[3])
+        info.write("<td>%s</td>" % tokens[4])
+        info.write("<td>%s</td>" % tokens[6])
+        info.write("</tr>")
 
-      info += "</tbody></table>"
+      info.write("</tbody></table>")
     else:
-      info += "No queued jobs."
+      info.write("No queued jobs.")
 
-  ### blocked jobs
-  if type == 'all' or type == 'Blocked':
-    if user == '':
-      blocked_jobs = queue.get_blocked_jobs()
-    else:
-      blocked_jobs = queue.get_blocked_jobs(user)
-    info += "<h3>Blocked Jobs</h3>"
-    if len(blocked_jobs) > 0:
-      info += '''<table id="blocked" class="tablesorter">
-        <thead>
-          <tr>
-            <th>Job ID</th>
-            <th>User</th>
-          </tr>
-        </thead>
-        <tbody>'''
-
-      for job in blocked_jobs:
-        info += "<tr>"
-        info += "<td><a href=\"./showjob.cgi?jobid=%s\">%s</a></td>" % (job['id'],job['id'])
-        info += "<td><a href=\"./showq.cgi?user=%s\">%s</a></td>" % (job['user'],job['user'])
-        info += "</tr>"
-
-      info += "</tbody></table>"
-    else:
-      info += 'No blocked jobs.'
 except:
-  #info = "Failed to gather information: %s" % sys.exc_info()[1]
-  info = "Failed to gather node information:<br><pre>%s</pre>" % traceback.format_exc()
+  info.write("Failed to gather node information:<br><pre>%s</pre>" % traceback.format_exc())
 
 # print response
 print '''Content-Type: text/html
@@ -143,15 +123,19 @@ print '''Content-Type: text/html
     <script type="text/javascript" src="/jobs/js/jquery.tablesorter.min.js"></script>
     <script type="text/javascript">
        $(document).ready(function() {
-          $("#usertable").tablesorter({sortList:[[0,0]], widgets:['zebra']});
-          $("#running").tablesorter({sortList:[[0,0]], widgets:['zebra']});
-          $("#idle").tablesorter({sortList:[[0,0]], widgets:['zebra']});
-          $("#blocked").tablesorter({sortList:[[0,0]], widgets:['zebra']});
+          var size = Math.max($("#usertable").find("tr").size(), 
+                              $("#running").find("tr").size(), 
+                              $("#queued").find("tr").size()); 
+          if (size < 1000) {                  
+            $("#usertable").tablesorter({sortList:[[0,0]], widgets:['zebra']});
+            $("#running").tablesorter({sortList:[[0,0]], widgets:['zebra']});
+            $("#queued").tablesorter({sortList:[[0,0]], widgets:['zebra']});
+          }
        });
     </script>
   </head>
   <body>'''
 
-print info
+print info.getvalue()
 
 print "</div></body></html>"

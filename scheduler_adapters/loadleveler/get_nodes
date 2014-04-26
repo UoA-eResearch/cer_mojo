@@ -1,0 +1,3 @@
+#!/bin/bash
+
+llstatus | cut -d\  -f1 | grep compute | sort

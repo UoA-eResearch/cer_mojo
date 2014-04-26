@@ -6,7 +6,8 @@ import traceback
 import datetime
 import cgi
 import cgitb
-import cluster.util.factory as factory
+from time import strftime,localtime
+from cluster.util import system_call
 from cluster import config
 
 cgitb.enable()
@@ -27,36 +28,43 @@ try:
   f.close()
 
   if valid_jobid(form):
-    jobid = form['jobid'].value
-    job = factory.create_job_instance(jobid).get_info()
-    info += "<h2>Job details for job %s</h2>" % job['id']
+    command = '/home/ganglia/bin/get_job_details %s' % form['jobid'].value
+    (stdout,stderr,rc) = system_call.execute('%s %s' % (config.scheduler_command_prefix, command))
+    tokens = stdout.split('|')
+
+    info += "<h2>Job details for job %s</h2>" % tokens[0]
     info += "<table>"
-    info += "<tr><td><b>Status</b>:</td><td>%s</td></tr>" % job['status']
-    info += "<tr><td><b>User</b>:</td><td>%s</td></tr>" % job['user']
-    info += "<tr><td><b>Job Directory</b>:</td><td>%s</td></tr>" % job['job_directory']
-    info += "<tr><td><b>Queue</b>:</td><td>%s</td></tr>" % job['queue']
-    info += "<tr><td><b>Requested CPU Cores</b>:</td><td>%s</td></tr>" % job['req_cores']
-    info += "<tr><td><b>Requested Memory [GB]</b>:</td><td>%s (per %s)</td></tr>" % (job['req_mem_gb']['value'], job['req_mem_gb']['split_mode'])
-    info += "<tr><td><b>Used Memory [GB]</b>:</td><td>%s</td></tr>" % job['used_mem_gb']
-    info += "<tr><td><b>Requested Walltime [h:m:s]</b>:</td><td>%s</td></tr>" % job['req_walltime']
-    info += "<tr><td><b>Used Walltime [h:m:s]</b>:</td><td>%s</td></tr>" % job['used_walltime']
-    info += "<tr><td><b>Queued time</b>:</td><td>%s</td></tr>" % job['queued_time']
-    info += "<tr><td><b>Start time</b>:</td><td>%s</td></tr>" % job['start_time']
+    info += "<tr><td><b>Status</b>:</td><td>%s</td></tr>" % tokens[2]
+    info += "<tr><td><b>User</b>:</td><td>%s</td></tr>" % tokens[1]
+    info += "<tr><td><b>Job Directory</b>:</td><td>%s</td></tr>" % tokens[8]
+    info += "<tr><td><b>Queue</b>:</td><td>%s</td></tr>" % tokens[3]
+    info += "<tr><td><b>Requested CPU Cores</b>:</td><td>%s</td></tr>" % tokens[4]
+    info += "<tr><td><b>Requested Memory [GB]</b>:</td><td>%s (per task)</td></tr>" % round(float(tokens[5])/1024,2)
+    info += "<tr><td><b>Requested Virtual Memory [GB]</b>:</td><td>%s (per Task)</td></tr>" % round(float(tokens[6])/1024,2)
+    info += "<tr><td><b>Requested Walltime [d+h:m:s]</b>:</td><td>%s</td></tr>" % tokens[11]
+    info += "<tr><td><b>Used Walltime [d+h:m:s]</b>:</td><td>%s</td></tr>" % tokens[12]
+    info += "<tr><td><b>Queued time</b>:</td><td>%s</td></tr>" % strftime('%Y/%m/%d %H:%M:%S', localtime(int(tokens[9])))
+    info += "<tr><td><b>Start time</b>:</td><td>%s</td></tr>" % strftime('%Y/%m/%d %H:%M:%S', localtime(int(tokens[10])))
     info += "<tr><td><b>Execution nodes</b>:</td><td>"
-    for name in job['execution_nodes'].keys():
-      info += "<a href=./shownode.cgi?nodename=%s>%s</a> (%s cores), " % (name, name, job['execution_nodes'][name]['cores'])
-    info = info[:-2]
+    for resources in tokens[13].split(','):
+      try:
+        node,cores,mem,vmem = resources.strip().split(':')
+      except:
+        continue
+      info += "<a href=./shownode.cgi?nodename=%s>%s</a> (CpuCores: %s, Memory[GB]: %s, VirtualMemory[GB]: %s)<br>" % (node, node, cores, round(float(mem)/1024,2),round(float(vmem)/1024,2))
     info += "</td></tr>"
     info += "</table><br><hr>"
 
     if print_specifics:
-      info += "<a href=./showjob.cgi?jobid=%s>Hide scheduler command details</a>" % jobid
+      command = '/usr/bin/llq -l %s' % tokens[0]
+      (stdout,stderr,rc) = system_call.execute('%s %s' % (config.scheduler_command_prefix, command))
+
+      info += "<a href=./showjob.cgi?jobid=%s>Hide scheduler command details</a>" % tokens[0]
       info += "<h3>Scheduler command details</h3>"
-      for (key,value) in job['scheduler_command_details'].items():
-        info += "<b>%s</b>" % key
-        info += "<pre>%s</pre>" % value
+      info += "<b>%s</b>" % command 
+      info += "<pre>%s</pre>" % stdout 
     else:
-      info += "<a href=./showjob.cgi?jobid=%s&specifics=true>Print scheduler command details</a>" % jobid
+      info += "<a href=./showjob.cgi?jobid=%s&specifics=true>Print scheduler command details</a>" % tokens[0]
   else:
     raise Exception('Invalid job id')
 except:

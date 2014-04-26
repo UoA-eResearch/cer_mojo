@@ -8,9 +8,8 @@ import datetime
 import cgi
 import cgitb
 import xml.sax
-import cluster.util.factory as factory
 from cluster import config
-import cluster.util.system_call as systemcall
+from cluster.util import system_call
 
 cgitb.enable()
 form = cgi.FieldStorage()
@@ -21,12 +20,15 @@ failure = False
 tt = {}
 tt['userId'] = "User ID"
 tt['physMem'] = "Total amount of physical memory available on the node"
+tt['virtMem'] = "Total amount of virtual memory available on the node"
 tt['availMem'] = "Amount of available memory that has not been requested by other jobs"
+tt['availVirtMem'] = "Amount of available virtual memory that has not been requested by other jobs"
 tt['cpuCores'] = "Total number of CPU cores"
 tt['availCpuCores'] = "Number of CPU cores that have not been requested by other jobs"
 tt['jobId'] = "Job ID assigned by the batch scheduler"
 tt['reqCpuCores'] = "Number of CPU cores requested by the user"
 tt['reqMem'] = "Amount of memory requested by the user"
+tt['reqVirtMem'] = "Amount of virtual memory requested by the user"
 tt['usedWallTime'] = "Real time the job ran for"
 tt['reqWallTime'] = "Max real time the job will run before it will be terminated by the batch scheduler"
 tt['queue'] = "Batch scheduler queue"
@@ -34,11 +36,12 @@ tt['pid'] = "Process ID"
 tt['cmd'] = "The command name of this process, without arguments"
 tt['%cpu'] = "The percentage of available CPU cycles occupied by this process. This is always an approximate figure, which is more accurate for longer running processes"
 tt['%mem'] = "The percentage of physical memory occupied by this process"
-tt['vm'] = "The total virtual memory size currently used by this process, in kilobytes"
-tt['vmpeak'] = "The total peak virtual memory size used by this process, in kilobytes"
+tt['vm'] = "The total virtual memory size currently used by this process, in GB"
+tt['vmpeak'] = "The total peak virtual memory size used by this process, in GB"
 
 # Parsing handler for SAX events: extract information of processes for this machine
 class MyHandler(xml.sax.ContentHandler):
+  nodes = []
   hostname = ''
   processes = []
   save = False
@@ -54,7 +57,9 @@ class MyHandler(xml.sax.ContentHandler):
         self.save = True
       else:
       	self.save = False
-      
+      if "compute" in attrs.getValue("NAME"):
+        self.nodes.append(attrs.getValue("NAME"))
+ 
     if name == "METRIC":
       attrname = attrs.getValue("NAME")
       if re.match(self.pattern, attrname) and self.save:
@@ -67,8 +72,8 @@ class MyHandler(xml.sax.ContentHandler):
           p['user'] = process[2]
           p['%cpu'] = process[3]
           p['%mem'] = process[4]
-          p['vm'] = process[5]
-          p['vmpeak'] = process[6]
+          p['vm'] = round(float(process[5])/1024/1024,2)
+          p['vmpeak'] = round(float(process[6])/1024/1024,2)
           self.processes.append(p)
 
 # make sure we have a nodename here
@@ -88,7 +93,7 @@ if valid_nodename(form):
     
     # fetch process information from ganglia
     # get all information in XML format from ganglia gmond via netcat
-    (stdout,stderr,rc) = systemcall.execute("nc %s %s" % (config.ganglia_gmond_aggregator, config.ganglia_gmond_port))
+    (stdout,stderr,rc) = system_call.execute("nc %s %s" % (config.ganglia_gmond_aggregator, config.ganglia_gmond_port))
 
     # parse XML
     handler = MyHandler()
@@ -97,15 +102,25 @@ if valid_nodename(form):
     
     processes = handler.processes
     
-    nodeinfo = factory.create_node_instance(nodename).get_info()
-    now = datetime.datetime.now()
-    info += "<h2>Node overview for node %s</h2>" % nodeinfo['name']
+    command = '/home/ganglia/bin/get_machine_data %s' % nodename
+    (stdout,stderr,rc) = system_call.execute('%s %s' % (config.scheduler_command_prefix, command))
+    nodetokens = stdout.split('|')
+
+    jobtokens = ''
+    if nodetokens[9].strip() != '':
+      command = '/home/ganglia/bin/get_job_details %s' % nodetokens[9].replace(',',' ')
+      (stdout,stderr,rc) = system_call.execute('%s %s' % (config.scheduler_command_prefix, command))
+      jobtokens = stdout.splitlines()
+
+    info += "<h2>Node overview for node %s</h2>" % nodename
     info += "<p>(Mouse over the labels and table headers to get more information)</p>"
     info += "<table border=0>"
-    info += "<tr><td><b><span title='%s'>Physical Memory [GB]</span></b>:</td><td>%s</td></tr>" % (tt['physMem'], nodeinfo['phys_mem_gb'])
-    info += "<tr><td><b><span title='%s'>Available Memory [GB]</span></b>:</td><td>%s</td></tr>" % (tt['availMem'], nodeinfo['avail_mem_gb'])
-    info += "<tr><td><b><span title='%s'>CPU Cores</span></b>:</td><td>%s</td></tr>" % (tt['cpuCores'], nodeinfo['cores'])
-    info += "<tr><td><b><span title='%s'>Available CPU Cores</span></b>:</td><td>%s</td></tr>" % (tt['availCpuCores'], nodeinfo['avail_cores'])
+    info += "<tr><td><b><span title='%s'>Physical Memory [GB]</span></b>:</td><td>%s</td></tr>" % (tt['physMem'], round(float(nodetokens[5])/1024,2))
+    info += "<tr><td><b><span title='%s'>Virtual Memory [GB]</span></b>:</td><td>%s</td></tr>" % (tt['virtMem'], round(float(nodetokens[7])/1024,2))
+    info += "<tr><td><b><span title='%s'>Available Memory [GB]</span></b>:</td><td>%s</td></tr>" % (tt['availMem'], round(float(nodetokens[6])/1024,2))
+    info += "<tr><td><b><span title='%s'>Available Virtual Memory [GB]</span></b>:</td><td>%s</td></tr>" % (tt['availVirtMem'], round(float(nodetokens[8])/1024,2))
+    info += "<tr><td><b><span title='%s'>CPU Cores</span></b>:</td><td>%s</td></tr>" % (tt['cpuCores'], nodetokens[3])
+    info += "<tr><td><b><span title='%s'>Available CPU Cores</span></b>:</td><td>%s</td></tr>" % (tt['availCpuCores'], nodetokens[4])
     info += "</table><br>"
 
     info += '<b>Job started by the batch scheduler, and their allocated resources</b>:<br>'
@@ -114,31 +129,42 @@ if valid_nodename(form):
     info += '<th><span title="%s">User</span></th>' % tt['userId']
     info += '<th><span title="%s">Requested CPU Cores</span></th>' % tt['reqCpuCores']
     info += '<th><span title="%s">Requested Memory [GB]</span></th>' % tt['reqMem']
-    info += '<th><span title="%s">Used Walltime [h:m:s]</span></th>' % tt['usedWallTime']
-    info += '<th><span title="%s">Requested Walltime [h:m:s]</span></th>' % tt['reqWallTime']
+    info += '<th><span title="%s">Requested Virtual Memory [GB]</span></th>' % tt['reqVirtMem']
+    info += '<th><span title="%s">Used Walltime [d+h:m:s]</span></th>' % tt['usedWallTime']
+    info += '<th><span title="%s">Requested Walltime [d+h:m:s]</span></th>' % tt['reqWallTime']
     info += '<th><span title="%s">Queue</span></th>' % tt['queue']
     info += '</tr></thead><tbody>'
-      
-    for jobid in nodeinfo['job_ids']:
-      job = factory.create_job_instance(jobid).get_info()
-      info += '<tr>'
-      info += '<td><a href=./showjob.cgi?jobid=%s>%s</a>' % (job['id'],job['id'])
-      if len(job['execution_nodes']) > 1:
-        mpi_job_present = True
-        info += ' (*)'
-      info += '</td>'
-      info += '<td><a href="./showq.cgi?user=%s">%s</a></td>' % (job['user'],job['user'])
-      info += '<td>%s</td>' % job['execution_nodes'][nodename]['cores']
-      info += '<td>%s</td>' % job['execution_nodes'][nodename]['mem']
-      info += '<td>%s</td>' % job['used_walltime']
-      info += '<td>%s</td>' % job['req_walltime']
-      info += '<td>%s</td>' % job['queue']
-      info += '</tr>'
-    info += '</tbody></table>'
 
-    if mpi_job_present:
-      info += "(*) This job runs on multiple nodes. The displayed memory related and CPU core related parameters of this job apply to this node only. "
-      info += "Click on the jobid for full information about the job.<br>"
+    if jobtokens != '':
+      for token in jobtokens:
+        t = token.split('|')
+        geometry = t[13]
+        for resources in geometry.split(','):
+          try:
+            node,cores,mem,vmem = resources.split(':')
+          except:
+            continue
+          if node == nodename:
+            break
+        info += '<tr>'
+        info += '<td><a href=./showjob.cgi?jobid=%s>%s</a>' % (t[0],t[0])
+        if len(geometry.split(',')) > 1:
+          mpi_job_present = True
+          info += ' (*)'
+        info += '</td>'
+        info += '<td><a href="./showq.cgi?user=%s">%s</a></td>' % (t[1],t[1])
+        info += '<td>%s</td>' % cores
+        info += '<td>%s</td>' % round(float(mem)/1024,2)
+        info += '<td>%s</td>' % round(float(vmem)/1024,2)
+        info += '<td>%s</td>' % t[12]
+        info += '<td>%s</td>' % t[11]
+        info += '<td>%s</td>' % t[3]
+        info += '</tr>'
+      info += '</tbody></table>'
+
+      if mpi_job_present:
+        info += "(*) This job runs on multiple nodes. The displayed memory related and CPU core related parameters of this job apply to this node only. "
+        info += "Click on the jobid for full information about the job.<br>"
 
     # System process information
     info += "<br><b>Process information</b>:<br>"
@@ -148,8 +174,8 @@ if valid_nodename(form):
     info += '<th><span title="%s">User</span></th>' % tt['userId']
     info += '<th><span title="%s">%%CPU</span></th>' % tt['%cpu']
     info += '<th><span title="%s">%%MEM</span></th>' % tt['%mem']
-    info += '<th><span title="%s">vm [kB]</span></th>' % tt['vm']
-    info += '<th><span title="%s">Peak vm [kB]</span></th>' % tt['vmpeak']
+    info += '<th><span title="%s">vm [GB]</span></th>' % tt['vm']
+    info += '<th><span title="%s">Peak vm [GB]</span></th>' % tt['vmpeak']
     info += '<th><span title="%s">Command</span></th>' % tt['cmd']
     info += '</tr></thead><tbody>'
   
@@ -193,10 +219,13 @@ if not failure:
   print "$(\"#jobs\").tablesorter({sortList:[[2,1]], widgets:['zebra']});"
   print "$(\"#processes\").tablesorter({sortList:[[2,1]], widgets:['zebra']});"
 else:
+  command = '/home/ganglia/bin/get_nodes'
+  (stdout,stderr,rc) = system_call.execute('%s %s' % (config.scheduler_command_prefix, command))
+  nodes = stdout.splitlines()
+
   # get cluster node list and display as modal
-  node_list = factory.create_nodes_instance().get_node_list()
   string = '<b>Pick a node</b>: <select onchange="reloadWithNode(this.value)"><option value=""></option>'
-  for node in node_list:
+  for node in sorted(nodes):
     string += '<option value="%s">%s</option>' % (node, node)
   string += '</select>'  
   print "var str = '%s';" % string

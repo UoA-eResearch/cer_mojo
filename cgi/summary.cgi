@@ -4,14 +4,17 @@ import os
 import sys
 import cgi
 import cgitb
-import cluster.util.factory as factory
+import traceback
+import cStringIO
+from string import whitespace
+from cluster.util import system_call
 from cluster import config
 
 cgitb.enable()
 form = cgi.FieldStorage()
 
 users = {}
-info = ''
+info = cStringIO.StringIO()
 
 def check_user(username):
   global users
@@ -21,51 +24,54 @@ def check_user(username):
     users[username]['idle'] = 0
 
 try:
-  queue = factory.create_queue_instance()
-  active_jobs = queue.get_active_jobs()
-  idle_jobs = queue.get_idle_jobs()
-
-  # Create per user overview
-  for job in active_jobs:
-    check_user(job['user'])
-    users[job['user']]['running'] += 1
-      
-  for job in idle_jobs:
-    check_user(job['user'])
-    users[job['user']]['idle'] += 1
-
+  command = '/home/ganglia/bin/get_summary'
+  (stdout,stderr,rc) = system_call.execute('%s %s' % (config.scheduler_command_prefix, command))
+  tokens = stdout.splitlines()
+  sum_active = 0
+  sum_idle = 0
+  sum_nq = 0
+  for token in tokens:
+    user,active,idle,nq = token.split('|')
+    sum_active += int(active)
+    sum_idle += int(idle)
+    sum_nq += int(nq)
+    
   # read header from file
   f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
-  info += f.read() % config.ganglia_main_page
+  info.write(f.read() % config.ganglia_main_page)
   f.close()
 
-  info += '<h2>Summary of jobs</h2>'
-  info += '<table>'
-  info += '<tr><td><b>Total number of jobs</b>:</td><td>%d</td></tr>' % (len(active_jobs) + len(idle_jobs))
-  info += '<tr><td><b>Running jobs</b>:</td><td>%d</td></tr>' % len(active_jobs)
-  info += '<tr><td><b>Queued jobs</b>:</td><td>%d</td></tr>' % len(idle_jobs)
-  info += '</table>'
-  info += '''<table id="usertable" class="tablesorter">
+  info.write('<h2>Summary of jobs</h2>')
+  info.write('<table>')
+  info.write('<tr><td><b>Total number of jobs</b>:</td><td>%d</td></tr>' % (sum_active + sum_idle + sum_nq))
+  info.write('<tr><td><b>Running</b>:</td><td>%d</td></tr>' % sum_active)
+  info.write('<tr><td><b>Queued</b>:</td><td>%d</td></tr>' % sum_idle)
+  info.write('<tr><td><b>Not Queued</b>:</td><td>%d</td></tr>' % sum_nq)
+  info.write('</table>')
+  info.write('''<table id="usertable" class="tablesorter">
     <thead>
       <tr>
         <th>User</th>
-        <th>Running Jobs</th>
-        <th>Queued Jobs</th>
+        <th>Running</th>
+        <th>Queued</th>
+        <th>Not Queued</th>
       </tr>
     </thead>
-    <tbody>'''
+    <tbody>''')
 
-  for user,map in users.items():
-    info += '<tr>'
-    info += '<td><a href="./showq.cgi?user=%s">%s</a></td>' % (user,user)
-    info += '<td>%s</td>' % map['running']
-    info += '<td>%s</td>' % map['idle']
-    info += '</tr>'
+  for token in tokens:
+    user,active,idle,nq = token.split('|')
+    info.write('<tr>')
+    info.write('<td><a href="./showq.cgi?user=%s">%s</a></td>' % (user,user))
+    info.write('<td>%s</td>' % active)
+    info.write('<td>%s</td>' % idle)
+    info.write('<td>%s</td>' % nq)
+    info.write('</tr>')
 
-  info += '</tbody></table>'
+  info.write('</tbody></table>')
 except Exception:
-  info = "Error while gathering information: %s" % sys.exc_info()[1]
-
+  info.write("Error while gathering information: %s" % traceback.format_exc())
+  
 
 # print response
 print '''Content-Type: text/html
@@ -84,6 +90,6 @@ print '''Content-Type: text/html
     </head>
     <body>'''
 
-print info
+print info.getvalue()
 
 print "</div></body></html>"

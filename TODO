@@ -1,7 +1,0 @@
-* Package cluster_tools:
-   - Make walltime format homogeneous: h:m:s or d+h:m:s but not mix of both
-   - In node information: for job information: in execution_nodes: rename mem to mem_gb
-* Be more precise with what version of LL and PBS/Maui this stuff works with?
-* Make document root configurable. should be easier to store js and css files
-  in a non-default directory
-
