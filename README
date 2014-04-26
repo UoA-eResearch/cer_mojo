@@ -10,24 +10,15 @@ Table of Contents:
 Overview
 ========
 
-Display information about jobs managed by a Local Resource Manager (LRM)
-like PBS or LoadLeveler in a web-based format.
+Display information about jobs managed by a LoadLeveler
+in a web-based format.
 
 The project consists of
 
 * An LRM-agnostic web interface (CGI scripts, JavaScript files, CSS
   stylesheets)
 
-* LRM-specific Python packages to get information about jobs.
-  Pre-defined packages exist for the folloing LRMs: 
-   - PBS/Maui
-   - LoadLeveler
-  For each supported LRM a package exists in the directory
-  'python/cluster/cluster/monitoring/', which contains modules
-  conforming to a well defined interface.
-  Support for additional LRMs can be added by providing a package
-  for the LRM in 'python/cluster/cluster/monitoring/' and configure
-  it as the default LRM.
+* LRM-specific scheduler adapters to get information about jobs.
   Information about jobs is gathered by extracting text from the
   output of LRM commands.
 
@@ -38,21 +29,9 @@ Installation Instructions
 1. Configure Python package "cluster"
 
  Configure the package
-   Configure the LRM in the configuration files 
-   * python/cluster/cluster/config.py
-   * python/cluster/cluster/monitoring/<SCHEDULER>/config.py
-
-   python/cluster/cluster/config.py:
-    * Set the value of 'default_scheduler' to a package
-      in python/cluster/cluster/monitoring/. Pre-defined
-      and supported LRMs are 'pbs' and 'loadleveler'
+   Configure the LRM in the configuration file python/cluster/cluster/config.py
     * Set the value of 'main_ganglia_page' to your ganglia
       website
-
-   python/cluster/cluster/monitoring/<SCHEDULER>/config.py
-    * Set the paths to the scheduler commands
-    * If certain cluster nodes shouldn't be listed, add them
-      to the array 'node_blacklist'
 
 2. Install Python package "cluster"
 
@@ -80,7 +59,8 @@ Installation Instructions
 
  Copy the scripts in cgi/ into the cgi-bin directory
  of the webserver
- 
+
+5. Install the scheduler adapter scripts 
 
 Supported Python Versions
 =========================
