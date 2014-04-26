@@ -22,7 +22,7 @@ Set the value of 'main_ganglia_page' to your ganglia website.
 cd python/cluster
 python setup.py install
 ```  
-  
+    
 3. Install the JavaScript files and CSS stylesheets
 The JavaScript files and CSS stylesheets are expected to be located in the directory 'jobs' of the webservers
 base website directory (document root).
