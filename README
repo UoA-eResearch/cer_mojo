@@ -10,17 +10,15 @@ Table of Contents:
 Overview
 ========
 
-Display information about jobs managed by a LoadLeveler
-in a web-based format.
+Display information about jobs run on the Auckland NeSI cluster (managed by LoadLeveler) in a web-based format.
+Uses information from LoadLeveler and Ganglia (about the actual running processes).
 
 The project consists of
 
-* An LRM-agnostic web interface (CGI scripts, JavaScript files, CSS
-  stylesheets)
+* An LRM-agnostic web interface (CGI scripts, JavaScript files, CSS stylesheets)
 
 * LRM-specific scheduler adapters to get information about jobs.
-  Information about jobs is gathered by extracting text from the
-  output of LRM commands.
+  Information about jobs is gathered by extracting text from the output of LRM commands.
 
 
 Installation Instructions
