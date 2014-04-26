@@ -15,22 +15,30 @@ Installation Instructions
 
 1. Configure Python package "cluster"
 Configure the LRM in the configuration file python/cluster/cluster/config.py.
-Set the value of 'main_ganglia_page' to your ganglia website.
-2. Install Python package "cluster" ```
+Set the value of 'main_ganglia_page' to your ganglia website.  
+  
+2. Install Python package "cluster"   
+```
 cd python/cluster
-python setup.py install ```
+python setup.py install
+```  
+  
 3. Install the JavaScript files and CSS stylesheets
 The JavaScript files and CSS stylesheets are expected to be located in the directory 'jobs' of the webservers
 base website directory (document root).
-(The following commands use ${DOCUMENT_ROOT} as the base website directory) ```
+(The following commands use ${DOCUMENT_ROOT} as the base website directory)  
+```
 mkdir -p ${DOCUMENT_ROOT}/jobs/js 
 mkdir -p ${DOCUMENT_ROOT}/jobs/style
 cp -r style/* ${DOCUMENT_ROOT}/jobs/style/
-cp -r js/* ${DOCUMENT_ROOT}/jobs/js/ ```
+cp -r js/* ${DOCUMENT_ROOT}/jobs/js/ 
+```  
 If the location for JavaScript and CSS files needs to be different from /jobs, the paths to JavaScript and CSS files
 must be adjusted in the scripts in the directory "cgi"
+  
 4. Install the CGI scripts
-Copy the scripts in cgi/ into the cgi-bin directory of the webserver.
+Copy the scripts in cgi/ into the cgi-bin directory of the webserver.  
+  
 5. Install the scheduler adapter scripts 
 
 
