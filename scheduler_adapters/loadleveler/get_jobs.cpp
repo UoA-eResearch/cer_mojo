@@ -104,6 +104,7 @@ void process_job(LL_element *job, JOBSLIST& jobs, string user) {
   string queued_time = get_queued_time(job);
 
   ll_get_data(job,LL_JobGetFirstStep,&step);
+
   while(step!=NULL) {
     ll_get_data(step,LL_StepState,&iBuffer);
     string id = get_stepid(step);
@@ -242,43 +243,41 @@ int get_num_cores(LL_element * step) {
   return numcores;
 }
 
-int figure_out_cores(LL_element *step)
-{
+int figure_out_cores(LL_element *step) {
     int rc;
     int cores=0;
 
     rc=ll_get_data(step,LL_StepTotalTasksRequested,&cores);
 
-    if(rc!=0 || !cores)
-    {
+    if(rc!=0 || !cores) {
         //not total tasks, try figure it out by node
         int nodes=0,tasks=0;
         cores=0;
 
         rc=ll_get_data(step,LL_StepTaskInstanceCount,&tasks);
 
-        if(tasks && rc==0)
-        {
+        if(tasks && rc==0) {
            return (tasks>1?tasks-1:tasks); //Why it returns tasks+1 beats me!
         }
 
         tasks=0;
         rc=ll_get_data(step,LL_StepTotalNodesRequested,&nodes);
-        if(rc!=0)
-        {
+        if(rc!=0) {
             nodes=1;
         }
-        if(nodes>10000)
+        if(nodes>10000) {
            nodes=1;
+        }
         rc=ll_get_data(step,LL_StepTasksPerNodeRequested,&tasks);
-        if(rc==0)
+        if(rc==0) {
             cores=nodes*tasks;
+        }
     }
 
-    if(!cores)
+    if(!cores) {
         cores=1;
-    if(cores>300000)
-    {
+    }
+    if(cores>300000) {
         cores=1;
     }
 
