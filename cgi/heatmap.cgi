@@ -278,7 +278,7 @@ try:
     Mouse over the squares to high-level information about the machine.
     Click on a square to see details about the machine.''')
   if error:
-    info.write("<br><br><font color='red'><b>There was an error gathering information for the following hosts from Ganglia:</b></font><br>%s" % ', '.join(failed_hosts))
+    info.write("<br><br><font color='red'><b>There was an error gathering information for the following hosts:</b></font><br>%s" % ', '.join(failed_hosts))
 
   info.write('<table cellpadding="30"><tr>')
   # overloaded_hosts:
