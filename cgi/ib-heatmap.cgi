@@ -147,7 +147,7 @@ try:
     info.write(createHeatmap(cat))
     info.write('</td>')
   info.write('<td>');
-  info.write('''Color encoding:
+  info.write('''<b>Color encoding</b>:
     <table cellspacing="0" style="border:1px solid black">
      <tr><td style="border:1px solid black" bgcolor="#00CCFF">No data available</td></tr>''')
   for i in range(0,len(colormap)):
