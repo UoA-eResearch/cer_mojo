@@ -326,9 +326,9 @@ print '''Content-Type: text/html
 
   <html>
   <head>
-     <link rel="stylesheet" href="/jobs/style/tablesorter/blue/style.css" type="text/css" media="print, screen"/>
+     <link rel="stylesheet" href="/jobs/style/tablesorter/theme.default.css" type="text/css" media="print, screen"/>
      <link rel="stylesheet" href="/jobs/style/main.css" type="text/css" media="print, screen"/>
-     <script type="text/javascript" src="/jobs/js/jquery-1.7.min.js"></script>
+     <script type="text/javascript" src="/jobs/js/jquery-1.8.3.min.js"></script>
      <script type="text/javascript" src="/jobs/js/jquery.tablesorter.min.js"></script>
     <style type="text/css">
       table.heatmap { border-collapse:collapse; }
@@ -337,8 +337,8 @@ print '''Content-Type: text/html
     </style>
     <script type="text/javascript">
       $(document).ready(function() {
-          $("#overloaded_nodes_table").tablesorter({sortList:[[1,1]], widgets:['zebra']});
-          $("#nodes_with_weak_processes_table").tablesorter({sortList:[[1,1]], widgets:['zebra']});
+          $("#overloaded_nodes_table").tablesorter({sortList:[[1,1]]});
+          $("#nodes_with_weak_processes_table").tablesorter({sortList:[[1,1]]});
       });
 
       function reload() {

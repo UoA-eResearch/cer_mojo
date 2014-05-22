@@ -78,13 +78,13 @@ print '''Content-Type: text/html
 
   <html>
     <head>
-      <link rel="stylesheet" href="/jobs/style/tablesorter/blue/style.css" type="text/css" media="print, screen"/>
+      <link rel="stylesheet" href="/jobs/style/tablesorter/theme.default.css" type="text/css" media="print, screen"/>
       <link rel="stylesheet" href="/jobs/style/main.css" type="text/css" media="print, screen"/>
-      <script type="text/javascript" src="/jobs/js/jquery-1.7.min.js"></script>
+      <script type="text/javascript" src="/jobs/js/jquery-1.8.3.min.js"></script>
       <script type="text/javascript" src="/jobs/js/jquery.tablesorter.min.js"></script>
       <script type="text/javascript">
         $(document).ready(function() {
-          $("#usertable").tablesorter({sortList:[[0,0]], widgets:['zebra']});
+          $("#usertable").tablesorter({sortList:[[0,0]]});
         });
       </script>
     </head>
