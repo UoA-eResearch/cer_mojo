@@ -22,9 +22,6 @@ views = {
   'memused': 'Memory: actual usage',
   'memreq': 'Memory: requested usage',
   'memdeviation': 'Memory: discrepancy used vs requested',
-  'vmemused': 'Virtual memory: actual usage',
-  'vmemreq': 'Virtual memory: requested usage',
-  'vmemdeviation': 'Virtual memory: Discrepancy used vs requested',
 }
 reload_interval_ms = 180000
 hosts = {}
@@ -63,11 +60,15 @@ def createHeatmap(category):
       elif category == 'cpusreq':
         usage = float(values['cpusreq']) / int(values['cpus'])
         color_index = int(round(usage * 10))
+        if color_index > 10:
+          color_index = 11
         color = colormaps['default'][color_index]
       elif category == 'cpusdeviation':
         usage = float(values['cpusused'] - values['cpusreq']) / values['cpus']
         color_index = int(round(usage * 10))
         if color_index < 0:
+          if color_index < -10:
+            color_index = -10
           color = colormaps['dev_under'][-color_index]
         elif color_index > 0:
           color = colormaps['dev_over'][color_index]
@@ -85,29 +86,15 @@ def createHeatmap(category):
         usage = float(values['memused_mb'] - values['memreq_mb']) / values['mem_mb']
         color_index = int(round(usage * 10))
         if color_index < 0:
+          if color_index < -10:
+            color_index = -10
           color = colormaps['dev_under'][-color_index]
         elif color_index > 0:
           color = colormaps['dev_over'][color_index]
-      elif category == 'vmemused':
-        usage = float(values['memused_mb'] / values['mem_mb'])
-        color_index = int(round(usage * 10))
-        if color_index > 10:
-          color_index = 11
-        color = colormaps['default'][color_index]
-      elif category == 'vmemreq':
-        usage = float(values['vmemreq_mb']) / values['vmem_mb']
-        color_index = int(round(usage * 10))
-        color = colormaps['default'][color_index]
-      elif category == 'vmemdeviation':
-        usage = float(values['vmemused_mb'] - values['vmemreq_mb']) / values['vmem_mb']
-        color_index = int(round(usage * 10))
-        if color_index < 0:
-          color = colormaps['dev_under'][-color_index]
-        elif color_index > 0:
-          color = colormaps['dev_over'][color_index]    
     except:
       error = True
       usage = 0
+      raise 
       if host not in failed_hosts:
         failed_hosts.append(host)
 
@@ -124,32 +111,52 @@ def createHeatmap(category):
   return tmp
 
 def get_nodes():
-  command = '/home/ganglia/bin/get_nodes'
   nodes = []
-  (stdout,stderr,rc) = systemcall.execute('%s %s' % (config.scheduler_command_prefix, command))
+  (stdout,stderr,rc) = systemcall.execute('%s get_nodes' % config.scheduler_command_prefix)
   if stdout:
     nodes = ' '.join(stdout.splitlines(True))
   return nodes
 
 def get_node_details():
-  command = '/home/ganglia/bin/get_machine_data %s' % get_nodes()
+  command = 'get_machine_data %s' % get_nodes()
   nodes = {}
   (stdout,stderr,rc) = systemcall.execute('%s %s' % (config.scheduler_command_prefix, command))
   if stdout:
-    lines = stdout.splitlines(True)
+    lines = stdout.splitlines(True)[1:]
     for line in lines:
+      if not line.strip():
+        continue
       tokens = line.split('|')
-      nodes[tokens[0]] = {}
-      nodes[tokens[0]]['cpus'] = int(tokens[3])
-      nodes[tokens[0]]['cpusreq'] = int(tokens[3]) - int(tokens[4])
-      nodes[tokens[0]]['cpusused'] = 0
-      nodes[tokens[0]]['mem_mb'] = int(tokens[5])
-      nodes[tokens[0]]['memreq_mb'] = int(tokens[5]) - int(tokens[6])
-      nodes[tokens[0]]['memused_mb'] = 0
-      nodes[tokens[0]]['vmem_mb'] = int(tokens[7])
-      nodes[tokens[0]]['vmemreq_mb'] = int(tokens[7]) - int(tokens[8])
-      nodes[tokens[0]]['vmemused_mb'] = 0
-      nodes[tokens[0]]['num_weak_processes'] = 0
+      node_name = tokens[0]
+      nodes[node_name] = {}
+      nodes[node_name]['cpus'] = int(tokens[3])
+      nodes[node_name]['cpusreq'] = int(tokens[3]) - int(tokens[4])
+      nodes[node_name]['cpusused'] = 0
+      mem_mb = tokens[1]
+      mem_avail_mb = tokens[2]
+      if mem_mb.endswith('G'):
+        mem_mb = int(mem_mb[0:-1]) * 1024
+      elif mem_mb.endswith('M'):
+        mem_mb = int(mem_mb[0:-1]) 
+      else:
+        mem_mb = int(mem_mb)
+
+      if mem_avail_mb.endswith('P'):
+        mem_avail_mb = int(float(mem_avail_mb[0:-1]) * 1024 * 1024)
+      elif mem_avail_mb.endswith('G'):
+        mem_avail_mb = int(float(mem_avail_mb[0:-1]) * 1024)
+      elif mem_avail_mb.endswith('M'):
+        mem_avail_mb = int(float(mem_avail_mb[0:-1]))
+      else:
+        raise Exception(node_name +": " + mem_avail_mb)
+        mem_avail_mb = int(mem_avail_mb)
+      nodes[node_name]['mem_mb'] = mem_mb
+      nodes[node_name]['memreq_mb'] = mem_mb - mem_avail_mb
+      nodes[node_name]['memused_mb'] = 0
+      nodes[node_name]['vmem_mb'] = mem_mb
+      nodes[node_name]['vmemreq_mb'] = mem_mb - mem_avail_mb
+      nodes[node_name]['vmemused_mb'] = 0
+      nodes[node_name]['num_weak_processes'] = 0
   return nodes
   
 # Parsing handler for SAX events 
@@ -165,6 +172,8 @@ class MyHandler(xml.sax.ContentHandler):
   def startElement(self, name, attrs):
     if name == "HOST":
       self.hosttmp = attrs.getValue("NAME")
+      if self.hosttmp.endswith('-p'):
+        self.hosttmp = self.hosttmp[0:-2]
       self.iptmp = attrs.getValue("IP")
     if name == "METRIC" and self.iptmp[0:8] in self.subnets and self.hosttmp in hosts:
       attrname = attrs.getValue("NAME")
@@ -222,11 +231,6 @@ try:
   
   button = '<button onclick="reload()">Go!</button>'
   
-  # read header from file
-  f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
-  info.write(f.read() % config.ganglia_main_page)
-  f.close()
-
   hosts = get_node_details()
   
   # get all information in XML format from ganglia gmond via netcat
@@ -264,7 +268,7 @@ try:
           <b>Usage maps</b>:<br>
           white: no/low utilization<br>
           red: high utilization<br>
-          yellow: overloaded<br>
+          yellow: host has suspended jobs, or is overloaded<br>
         </td>
         <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<td>
         <td>
@@ -358,5 +362,7 @@ print '''Content-Type: text/html
 
 print info.getvalue()
 info.close()
+#print '<center><img src="/jobs/pics/construction.jpg"/><font color="003366"><h1>Porting to SLURM... coming soon</h1></font></center>'
+
 
 print "</div></body></html>"
