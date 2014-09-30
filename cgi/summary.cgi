@@ -24,29 +24,29 @@ def check_user(username):
     users[username]['idle'] = 0
 
 try:
-  command = '/home/ganglia/bin/get_summary'
-  (stdout,stderr,rc) = system_call.execute('%s %s' % (config.scheduler_command_prefix, command))
+  (stdout,stderr,rc) = system_call.execute('%s get_summary' % config.scheduler_command_prefix)
   tokens = stdout.splitlines()
   sum_active = 0
   sum_idle = 0
-  sum_nq = 0
+  sum_suspended = 0
+  sum_other = 0
   for token in tokens:
-    user,active,idle,nq = token.split('|')
+    token = token.strip()
+    if not token or token.startswith('#'):
+      continue
+    user,active,idle,suspended,other = token.split('|')
     sum_active += int(active)
     sum_idle += int(idle)
-    sum_nq += int(nq)
+    sum_suspended += int(suspended)
+    sum_other += int(other)
     
-  # read header from file
-  f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
-  info.write(f.read() % config.ganglia_main_page)
-  f.close()
-
   info.write('<h2>Summary of jobs</h2>')
   info.write('<table>')
-  info.write('<tr><td><b>Total number of jobs</b>:</td><td>%d</td></tr>' % (sum_active + sum_idle + sum_nq))
+  info.write('<tr><td><b>Total number of jobs</b>:</td><td>%d</td></tr>' % (sum_active + sum_idle + sum_suspended + sum_other))
   info.write('<tr><td><b>Running</b>:</td><td>%d</td></tr>' % sum_active)
   info.write('<tr><td><b>Queued</b>:</td><td>%d</td></tr>' % sum_idle)
-  info.write('<tr><td><b>Not Queued</b>:</td><td>%d</td></tr>' % sum_nq)
+  info.write('<tr><td><b>Suspended</b>:</td><td>%d</td></tr>' % sum_suspended)
+  info.write('<tr><td><b>Other</b>:</td><td>%d</td></tr>' % sum_other)
   info.write('</table>')
   info.write('''<table id="usertable" class="tablesorter">
     <thead>
@@ -54,18 +54,23 @@ try:
         <th>User</th>
         <th>Running</th>
         <th>Queued</th>
-        <th>Not Queued</th>
+        <th>Suspended</th>
+        <th>Other</th>
       </tr>
     </thead>
     <tbody>''')
 
   for token in tokens:
-    user,active,idle,nq = token.split('|')
+    token = token.strip()
+    if not token or token.startswith('#'):
+      continue
+    user,active,idle,suspended,other = token.split('|')
     info.write('<tr>')
     info.write('<td><a href="./showq.cgi?user=%s">%s</a></td>' % (user,user))
     info.write('<td>%s</td>' % active)
     info.write('<td>%s</td>' % idle)
-    info.write('<td>%s</td>' % nq)
+    info.write('<td>%s</td>' % suspended)
+    info.write('<td>%s</td>' % other)
     info.write('</tr>')
 
   info.write('</tbody></table>')
@@ -91,5 +96,7 @@ print '''Content-Type: text/html
     <body>'''
 
 print info.getvalue()
+#print '<center><img src="/jobs/pics/construction.jpg"/><font color="003366"><h1>Porting to SLURM... coming soon</h1></font></center>'
+
 
 print "</div></body></html>"
