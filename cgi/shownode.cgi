@@ -32,6 +32,7 @@ tt['reqVirtMem'] = "Amount of virtual memory requested by the user"
 tt['usedWallTime'] = "Real time the job ran for"
 tt['reqWallTime'] = "Max real time the job will run before it will be terminated by the batch scheduler"
 tt['queue'] = "Batch scheduler queue"
+tt['status'] = "Status of the job"
 tt['pid'] = "Process ID"
 tt['cmd'] = "The command name of this process, without arguments"
 tt['%cpu'] = "The percentage of available CPU cycles occupied by this process. This is always an approximate figure, which is more accurate for longer running processes"
@@ -81,10 +82,6 @@ def valid_nodename(form):
     trtable = string.maketrans(string.lowercase, string.lowercase)
     return form.has_key('nodename') and len(form['nodename'].value) < 50 
 
-# read header from file
-f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
-info += f.read() % config.ganglia_main_page
-f.close()
 
 if valid_nodename(form):
   nodename = form['nodename'].value
@@ -102,23 +99,19 @@ if valid_nodename(form):
     
     processes = handler.processes
     
-    command = '/home/ganglia/bin/get_machine_data %s' % nodename
-    (stdout,stderr,rc) = system_call.execute('%s %s' % (config.scheduler_command_prefix, command))
-    nodetokens = stdout.split('|')
-
+    (stdout,stderr,rc) = system_call.execute('%s get_machine_data %s' % (config.scheduler_command_prefix, nodename))
+    nodetokens = stdout.splitlines()[1].split('|')
+      
     jobtokens = ''
-    if nodetokens[9].strip() != '':
-      command = '/home/ganglia/bin/get_job_details %s' % nodetokens[9].replace(',',' ')
-      (stdout,stderr,rc) = system_call.execute('%s %s' % (config.scheduler_command_prefix, command))
-      jobtokens = stdout.splitlines()
+    if len(nodetokens) > 5 and nodetokens[5].strip():
+      (stdout,stderr,rc) = system_call.execute('%s get_job_details %s' % (config.scheduler_command_prefix, nodetokens[5].replace(',',' ')))
+      jobtokens = stdout.splitlines()[1:]
 
     info += "<h2>Node overview for node %s</h2>" % nodename
     info += "<p>(Mouse over the labels and table headers to get more information)</p>"
     info += "<table border=0>"
-    info += "<tr><td><b><span title='%s'>Physical Memory [GB]</span></b>:</td><td>%s</td></tr>" % (tt['physMem'], round(float(nodetokens[5])/1024,2))
-    info += "<tr><td><b><span title='%s'>Virtual Memory [GB]</span></b>:</td><td>%s</td></tr>" % (tt['virtMem'], round(float(nodetokens[7])/1024,2))
-    info += "<tr><td><b><span title='%s'>Available Memory [GB]</span></b>:</td><td>%s</td></tr>" % (tt['availMem'], round(float(nodetokens[6])/1024,2))
-    info += "<tr><td><b><span title='%s'>Available Virtual Memory [GB]</span></b>:</td><td>%s</td></tr>" % (tt['availVirtMem'], round(float(nodetokens[8])/1024,2))
+    info += "<tr><td><b><span title='%s'>Total Memory</span></b>:</td><td>%s</td></tr>" % (tt['physMem'], nodetokens[1])
+    info += "<tr><td><b><span title='%s'>Available Memory</span></b>:</td><td>%s</td></tr>" % (tt['availMem'], nodetokens[2])
     info += "<tr><td><b><span title='%s'>CPU Cores</span></b>:</td><td>%s</td></tr>" % (tt['cpuCores'], nodetokens[3])
     info += "<tr><td><b><span title='%s'>Available CPU Cores</span></b>:</td><td>%s</td></tr>" % (tt['availCpuCores'], nodetokens[4])
     info += "</table><br>"
@@ -128,20 +121,22 @@ if valid_nodename(form):
     info += '<th><span title="%s">Job ID</span></th>' % tt['jobId']
     info += '<th><span title="%s">User</span></th>' % tt['userId']
     info += '<th><span title="%s">Requested CPU Cores</span></th>' % tt['reqCpuCores']
-    info += '<th><span title="%s">Requested Memory [GB]</span></th>' % tt['reqMem']
-    info += '<th><span title="%s">Requested Virtual Memory [GB]</span></th>' % tt['reqVirtMem']
+    info += '<th><span title="%s">Requested Memory</span></th>' % tt['reqMem']
     info += '<th><span title="%s">Used Walltime [d+h:m:s]</span></th>' % tt['usedWallTime']
     info += '<th><span title="%s">Requested Walltime [d+h:m:s]</span></th>' % tt['reqWallTime']
+    info += '<th><span title="%s">Status</span></th>' % tt['status']
     info += '<th><span title="%s">Queue</span></th>' % tt['queue']
     info += '</tr></thead><tbody>'
 
     if jobtokens != '':
       for token in jobtokens:
+        if not token:
+          continue
         t = token.split('|')
-        geometry = t[13]
+        geometry = t[11]
         for resources in geometry.split(','):
           try:
-            node,cores,mem,vmem = resources.split(':')
+            node,cores,mem = resources.split(':')
           except:
             continue
           if node == nodename:
@@ -154,10 +149,10 @@ if valid_nodename(form):
         info += '</td>'
         info += '<td><a href="./showq.cgi?user=%s">%s</a></td>' % (t[1],t[1])
         info += '<td>%s</td>' % cores
-        info += '<td>%s</td>' % round(float(mem)/1024,2)
-        info += '<td>%s</td>' % round(float(vmem)/1024,2)
-        info += '<td>%s</td>' % t[12]
-        info += '<td>%s</td>' % t[11]
+        info += '<td>%s</td>' % mem
+        info += '<td>%s</td>' % t[10]
+        info += '<td>%s</td>' % t[9]
+        info += '<td>%s</td>' % t[2]
         info += '<td>%s</td>' % t[3]
         info += '</tr>'
       info += '</tbody></table>'
@@ -219,8 +214,7 @@ if not failure:
   print "$(\"#jobs\").tablesorter({sortList:[[2,1]]});"
   print "$(\"#processes\").tablesorter({sortList:[[2,1]]});"
 else:
-  command = '/home/ganglia/bin/get_nodes'
-  (stdout,stderr,rc) = system_call.execute('%s %s' % (config.scheduler_command_prefix, command))
+  (stdout,stderr,rc) = system_call.execute('%s get_nodes' % config.scheduler_command_prefix)
   nodes = stdout.splitlines()
 
   # get cluster node list and display as modal
@@ -239,6 +233,7 @@ print '''
 '''
 
 print info
+#print '<center><img src="/jobs/pics/construction.jpg"/><font color="003366"><h1>Porting to SLURM... coming soon</h1></font></center>'
 
 print "</div></body></html>"
 
