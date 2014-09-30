@@ -147,8 +147,9 @@ def get_node_details():
         mem_avail_mb = int(float(mem_avail_mb[0:-1]) * 1024)
       elif mem_avail_mb.endswith('M'):
         mem_avail_mb = int(float(mem_avail_mb[0:-1]))
+      elif mem_avail_mb.endswith('K'):
+        mem_avail_mb = int(float(mem_avail_mb[0:-1]) / 1024)
       else:
-        raise Exception(node_name +": " + mem_avail_mb)
         mem_avail_mb = int(mem_avail_mb)
       nodes[node_name]['mem_mb'] = mem_mb
       nodes[node_name]['memreq_mb'] = mem_mb - mem_avail_mb
