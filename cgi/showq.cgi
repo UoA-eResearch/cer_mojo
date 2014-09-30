@@ -16,6 +16,7 @@ type = 'all'
 user = ''
 info = cStringIO.StringIO()
 active_jobs = []
+suspended_jobs = []
 queued_jobs = []
 
 try:
@@ -24,29 +25,23 @@ try:
   if form.has_key('user'):
     user = form['user'].value
 
-  # read header from file
-  f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
-  info.write(f.read() % config.ganglia_main_page)
-  f.close()
-
-  if user != '':
-    info.write('<h2>Jobs of user %s</h2>' % user)
-
-  if user == '':
-    command = '/home/ganglia/bin/get_jobs'
-    (stdout,stderr,rc) = system_call.execute('%s %s' % (config.scheduler_command_prefix, command))
+  if not user:
+    (stdout,stderr,rc) = system_call.execute('%s get_jobs' % config.scheduler_command_prefix)
     jobs = stdout.splitlines() 
   else:
-    command = '/home/ganglia/bin/get_jobs %s' % user
-    (stdout,stderr,rc) = system_call.execute('%s %s' % (config.scheduler_command_prefix, command))
+    info.write('<h2>Jobs of user %s</h2>' % user)
+    (stdout,stderr,rc) = system_call.execute('%s get_jobs %s' % (config.scheduler_command_prefix, user))
     jobs = stdout.splitlines() 
 
   for job in jobs:
-    status = job.split('|')[1]
-    if status == 'R':
-      active_jobs.append(job)
-    elif status == 'I':
-      queued_jobs.append(job)
+    if job:
+      status = job.split('|')[1]
+      if status == 'R':
+        active_jobs.append(job)
+      elif status == 'PD':
+        queued_jobs.append(job)
+      elif status == 'S':
+        suspended_jobs.append(job)
     
   ### running jobs
   if type == 'all' or type == 'Running':
@@ -57,28 +52,66 @@ try:
           <tr>
             <th>Job ID</th>
             <th>User</th>
-            <th>Queue</th>
-            <th>Node</th>
+            <th>Working Directory</th>
             <th>Requested Cores</th>
             <th>Start time</th>
+            <th>Nodes</th>
+            <th>Queue</th>
           </tr>
         </thead>
         <tbody>''')
 
       for job in active_jobs:
-        tokens = job.split('|')
+        # jobid|jobstatus|userid|queue|numcores|nodes|starttime|jobdir
+        tok = job.split('|')
         info.write("<tr>")
-        info.write("<td><a href=\"./showjob.cgi?jobid=%s\">%s</a></td>" % (tokens[0],tokens[0]))
-        info.write("<td><a href=\"./showq.cgi?user=%s\">%s</a></td>" % (tokens[2],tokens[2]))
-        info.write("<td>%s</td>" % tokens[3])
-        info.write("<td><a href=\"./shownode.cgi?nodename=%s\">%s</a></td>" % (tokens[5],tokens[5]))
-        info.write("<td>%s</td>" % tokens[4])
-        info.write("<td>%s</td>" % tokens[7])
+        info.write("<td><a href=\"./showjob.cgi?jobid=%s\">%s</a></td>" % (tok[0],tok[0]))
+        info.write("<td><a href=\"./showq.cgi?user=%s\">%s</a></td>" % (tok[2],tok[2]))
+        info.write("<td>%s</td>" % tok[7])
+        info.write("<td>%s</td>" % tok[4])
+        info.write("<td>%s</td>" % tok[6])
+        info.write("<td>%s</td>" % tok[5])
+        info.write("<td>%s</td>" % tok[3])
         info.write("</tr>")
 
       info.write("</tbody></table>")
     else:
       info.write('No active jobs.')
+
+  ### suspended jobs
+  if type == 'all' or type == 'Suspended':
+    info.write("<h3>Suspended Jobs</h3>")
+    if len(suspended_jobs) > 0:
+      info.write('''<table id="suspended" class="tablesorter">
+        <thead>
+          <tr>
+            <th>Job ID</th>
+            <th>User</th>
+            <th>Working Directory</th>
+            <th>Requested Cores</th>
+            <th>Start time</th>
+            <th>Nodes</th>
+            <th>Queue</th>
+          </tr>
+        </thead>
+        <tbody>''')
+
+      for job in suspended_jobs:
+        # jobid|jobstatus|userid|queue|numcores|nodes|starttime|jobdir
+        tok = job.split('|')
+        info.write("<tr>")
+        info.write("<td><a href=\"./showjob.cgi?jobid=%s\">%s</a></td>" % (tok[0],tok[0]))
+        info.write("<td><a href=\"./showq.cgi?user=%s\">%s</a></td>" % (tok[2],tok[2]))
+        info.write("<td>%s</td>" % tok[7])
+        info.write("<td>%s</td>" % tok[4])
+        info.write("<td>%s</td>" % tok[6])
+        info.write("<td>%s</td>" % tok[5])
+        info.write("<td>%s</td>" % tok[3])
+        info.write("</tr>")
+
+      info.write("</tbody></table>")
+    else:
+      info.write('No suspended jobs.')
 
   ### queued jobs
   if type == 'all' or type == 'Queued':
@@ -89,20 +122,21 @@ try:
           <tr>
             <th>Job ID</th>
             <th>User</th>
-            <th>Group</th>
+            <th>Working Directory</th>
             <th>Requested Cores</th>
-            <th>Queued time</th>
+            <th>Queue</th>
           </tr>
         </thead><tbody>''')
 
       for job in queued_jobs:
-        tokens = job.split('|')
+        # jobid|jobstatus|userid|queue|numcores|nodes|starttime|jobdir
+        tok = job.split('|')
         info.write("<tr>")
-        info.write("<td><a href=\"./showjob.cgi?jobid=%s\">%s</a></td>" % (tokens[0],tokens[0]))
-        info.write("<td><a href=\"./showq.cgi?user=%s\">%s</a></td>" % (tokens[2],tokens[2]))
-        info.write("<td>%s</td>" % tokens[3])
-        info.write("<td>%s</td>" % tokens[4])
-        info.write("<td>%s</td>" % tokens[6])
+        info.write("<td><a href=\"./showjob.cgi?jobid=%s\">%s</a></td>" % (tok[0],tok[0]))
+        info.write("<td><a href=\"./showq.cgi?user=%s\">%s</a></td>" % (tok[2],tok[2]))
+        info.write("<td>%s</td>" % tok[7])
+        info.write("<td>%s</td>" % tok[4])
+        info.write("<td>%s</td>" % tok[3])
         info.write("</tr>")
 
       info.write("</tbody></table>")
@@ -129,6 +163,7 @@ print '''Content-Type: text/html
           if (size < 3000) {                  
             $("#usertable").tablesorter({sortList:[[0,0]]});
             $("#running").tablesorter({sortList:[[0,0]]});
+            $("#suspended").tablesorter({sortList:[[0,0]]});
             $("#queued").tablesorter({sortList:[[0,0]]});
           }
        });
@@ -137,5 +172,6 @@ print '''Content-Type: text/html
   <body>'''
 
 print info.getvalue()
+#print '<center><img src="/jobs/pics/construction.jpg"/><font color="003366"><h1>Porting to SLURM... coming soon</h1></font></center>'
 
 print "</div></body></html>"
