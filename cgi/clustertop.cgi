@@ -61,10 +61,6 @@ class MyHandler(xml.sax.ContentHandler):
   def getProcessesSortedByHost(self):
     return sorted(self.processes, key=lambda x: x['hostname'])
 
-# read header from file
-f = open('%s%s%s' % (os.path.dirname(__file__), os.sep, 'header.tpl'))
-info.write(f.read() % config.ganglia_main_page)
-f.close()
 
 try:
     
@@ -131,5 +127,7 @@ print '''
 
 print info.getvalue()
 info.close()
+#print '<center><img src="/jobs/pics/construction.jpg"/><font color="003366"><h1>Porting to SLURM... coming soon</h1></font></center>'
+
 
 print "</div></body></html>"
