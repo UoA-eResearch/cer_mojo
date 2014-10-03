@@ -132,7 +132,8 @@ def get_node_details():
       nodes[node_name]['cpus'] = int(tokens[3])
       nodes[node_name]['cpusreq'] = int(tokens[3]) - int(tokens[4])
       nodes[node_name]['cpusused'] = 0
-      nodes[node_name]['totalload'] = 0
+      nodes[node_name]['total_actual_load'] = 0
+      nodes[node_name]['total_requested_load'] = int(nodes[node_name]['cpusreq']) * 100
       mem_mb = tokens[1]
       mem_avail_mb = tokens[2]
       if mem_mb.endswith('G'):
@@ -186,7 +187,7 @@ class MyHandler(xml.sax.ContentHandler):
             percent_cpu = float(val.split('|')[3])
             percent_mem = float(val.split('|')[4])
             peak_vmem = float(val.split('|')[6])
-            hosts[self.hosttmp]['totalload'] += percent_cpu
+            hosts[self.hosttmp]['total_actual_load'] += percent_cpu
             hosts[self.hosttmp]['cpusused'] += int(((percent_cpu - self.cpu_usage_threshold)/100)+1)
             hosts[self.hosttmp]['memused_mb'] += (percent_mem * hosts[self.hosttmp]['mem_mb']) / 100
             hosts[self.hosttmp]['vmemused_mb'] += peak_vmem/1024
@@ -244,10 +245,13 @@ try:
   xml.sax.parseString(stdout, handler)
 
   # Calculate total cluster load
-  cluster_load = 0.0
+  cluster_actual_load = 0.0
+  cluster_requested_load = 0.0
   for key in hosts.keys():
-    cluster_load += float(hosts[key]['totalload']) / hosts[key]['cpus']
-  cluster_load = cluster_load / len(hosts)
+    cluster_actual_load += float(hosts[key]['total_actual_load']) / hosts[key]['cpus']
+    cluster_requested_load += float(hosts[key]['total_requested_load']) / hosts[key]['cpus']
+  cluster_actual_load = cluster_actual_load / len(hosts)
+  cluster_requested_load = cluster_requested_load / len(hosts)
    
   # figure out table properties (num rows and cols)
   hostlist = hosts.keys()
@@ -258,7 +262,7 @@ try:
   if (numcols * numrows) != numhosts:
     numrows += 1
 
-  info.write('<b>Total actual cluster load</b>: %.2f%%<br><br>' % cluster_load)
+  info.write('<b>Total cluster load</b>: Actual: %s%%, Requested: %s%%<br><br>' % (int(cluster_actual_load), int(cluster_requested_load)))
   info.write('<table cellpadding="5"><tr>')
   info.write('<td><b>%s</b><br>' % select1)
   info.write(createHeatmap(view1))
