@@ -71,6 +71,10 @@ def createHeatmap(category):
             color_index = -10
           color = colormaps['dev_under'][-color_index]
         elif color_index > 0:
+          colmapsize = len(colormaps['dev_over'])
+          if color_index > (colmapsize - 1):
+            # TODO: handle outbreaks like this
+            color_index = colmapsize - 1
           color = colormaps['dev_over'][color_index]
       elif category == 'memused':
         usage = float(values['memused_mb'] / values['mem_mb'])
@@ -80,7 +84,10 @@ def createHeatmap(category):
         color = colormaps['default'][color_index]
       elif category == 'memreq':
         usage = float(values['memreq_mb']) / values['mem_mb']
+        colmapsize = len(colormaps['default'])
         color_index = int(round(usage * 10))
+        if color_index > (colmapsize - 1):
+          color_index = colmapsize - 1
         color = colormaps['default'][color_index]
       elif category == 'memdeviation':
         usage = float(values['memused_mb'] - values['memreq_mb']) / values['mem_mb']
@@ -90,6 +97,10 @@ def createHeatmap(category):
             color_index = -10
           color = colormaps['dev_under'][-color_index]
         elif color_index > 0:
+          colmapsize = len(colormaps['dev_under'])
+          if color_index > (colmapsize - 1):
+            # TODO: handle outbreaks like this
+            color_index = colmapsize - 1
           color = colormaps['dev_over'][color_index]
     except:
       error = True
@@ -376,7 +387,6 @@ print '''Content-Type: text/html
 
 print info.getvalue()
 info.close()
-#print '<center><img src="/jobs/pics/construction.jpg"/><font color="003366"><h1>Porting to SLURM... coming soon</h1></font></center>'
 
 
 print "</div></body></html>"
