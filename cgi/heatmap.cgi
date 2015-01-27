@@ -258,12 +258,18 @@ try:
   # Calculate total cluster load
   cluster_actual_load = 0.0
   cluster_requested_load = 0.0
+  load_ratio = 0.0
+  effective_load = 0.0
+
   for key in hosts.keys():
     cluster_actual_load += float(hosts[key]['total_actual_load']) / hosts[key]['cpus']
     cluster_requested_load += float(hosts[key]['total_requested_load']) / hosts[key]['cpus']
   cluster_actual_load = cluster_actual_load / len(hosts)
   cluster_requested_load = cluster_requested_load / len(hosts)
-   
+  if cluster_requested_load > 0:
+    load_ratio = cluster_actual_load / cluster_requested_load
+    effective_load = (cluster_actual_load / cluster_requested_load) * cluster_actual_load
+
   # figure out table properties (num rows and cols)
   hostlist = hosts.keys()
   hostlist.sort()
@@ -273,7 +279,7 @@ try:
   if (numcols * numrows) != numhosts:
     numrows += 1
 
-  info.write('<b>Total cluster load</b>: Actual: %s%%, Requested: %s%%<br><br>' % (int(cluster_actual_load), int(cluster_requested_load)))
+  info.write('<b>Cluster load</b>: Actual: %s%%, Requested: %s%%, Load ratio: %s, Effective Load: %s%%<br><br>' % (int(cluster_actual_load), int(cluster_requested_load), round(load_ratio,2), round(effective_load,2)))
   info.write('<table cellpadding="5"><tr>')
   info.write('<td><b>%s</b><br>' % select1)
   info.write(createHeatmap(view1))
