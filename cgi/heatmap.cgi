@@ -279,7 +279,7 @@ try:
   if (numcols * numrows) != numhosts:
     numrows += 1
 
-  info.write('<b>Cluster load</b>: Actual: %s%%, Requested: %s%%, Load ratio: %s, Effective Load: %s%%<br><br>' % (int(cluster_actual_load), int(cluster_requested_load), round(load_ratio,2), round(effective_load,2)))
+  info.write('<b>Cluster load</b>: Actual: %s%%, Requested: %s%%, Load ratio: %s, Effective Load: %s%%<br><br>' % (int(cluster_actual_load), int(cluster_requested_load), round(load_ratio,2), int(effective_load)))
   info.write('<table cellpadding="5"><tr>')
   info.write('<td><b>%s</b><br>' % select1)
   info.write(createHeatmap(view1))
