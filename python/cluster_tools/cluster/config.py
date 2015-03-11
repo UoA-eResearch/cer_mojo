@@ -1,4 +1,4 @@
-scheduler_command_prefix = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /etc/apache2/ssh/id_rsa ganglia@10.0.101.204'
+scheduler_command_prefix = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /etc/apache2/ssh/id_rsa mfel395@10.0.103.76'
 ganglia_main_page = 'http://ganglia.uoa.nesi.org.nz/?c=University%20of%20Auckland%20HPC%20Cluster'
 ganglia_gmond_aggregator = 'localhost'
 ganglia_gmond_port = '8649'
