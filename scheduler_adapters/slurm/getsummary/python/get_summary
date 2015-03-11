@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+import sys
+import shlex
+from subprocess import Popen, PIPE
+
+def run(command_and_args, error_on_stderr=True, error_on_nonzero_rc=True):
+  ''' run a local system call
+      behaviour on non-zero exit code or existence of stderr is controlled by the function parameters.
+  '''
+  try:
+    process = Popen(shlex.split(command_and_args), shell=False, stdout=PIPE, stderr=PIPE)
+    (stdout, stderr) = process.communicate()
+    rc = process.returncode
+  except:
+    raise Exception("failed to run '%s': %s" % (command_and_args, sys.exc_info()[1]))
+
+  if rc != 0 and error_on_nonzero_rc:
+    raise Exception('\'%s\' returned exit code %d. stderr: %s' % (command_and_args, rc, stderr))
+
+  if stderr != "" and error_on_stderr:
+    raise Exception('error running command \'%s\': Got non-empty stderr: %s' % (command_and_args, stderr))
+
+  return (stdout, stderr, rc)
+
+
+stdout,stderr,rc = run('squeue -o "%u|%t"')
+lines = stdout.splitlines()
+jobs = lines[1:]
+users = {}
+for job in jobs:
+  if '|' in job:
+    user,status = job.split('|')
+    if not user in users:
+      users[user] = { 'R': 0, 'PD': 0, 'S': 0, 'O': 0}
+    if status in [ 'R', 'PD', 'S' ]:
+      users[user][status] += 1
+    else:
+      users[user]['O'] += 1 
+
+#print "# user|active|pending|suspended|other"
+for user in sorted(users.keys()):
+  print "%s|%s|%s|%s|%s" % (user, users[user]['R'], users[user]['PD'], users[user]['S'], users[user]['O'])

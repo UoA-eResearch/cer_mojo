@@ -1,0 +1,62 @@
+jobid|username|status|queue|numcores|reqmempertask|reqvmempertask|masternode|jobdir|qtimestamp|starttimestamp|reqwalltime|usedwalltime|node:numcores:mem:vmem,node:numcores:mem:vmem...
+
+login1-p.1495948.0|gasl226|Running|medium|50|6144|6144|compute-e1-019-p|/gpfs1m/projects/uoa00004/Projects/pk_reconstruction/run/planck/neutrinos/pol/lin_1_neff_sum_r|1401058772|1401072598|4+00:00:00|3+01:16:13|compute-c1-001-p:15:92160:92160,compute-c1-004-p:15:92160:92160,compute-c1-021-p:5:30720:30720,compute-e1-019-p:15:92160:92160
+
+
+[mfel395@build-wm jobs]$ scontrol -d show job 10020701
+JobId=10020701 Name=MPI_JOB
+   UserId=mfel395(5096) GroupId=nesi(5000)
+   Priority=18 Nice=0 Account=uoa99999 QOS=normal
+   JobState=RUNNING Reason=None Dependency=(null)
+   Requeue=1 Restarts=0 BatchFlag=1 ExitCode=0:0
+   DerivedExitCode=0:0
+   RunTime=00:08:21 TimeLimit=01:00:00 TimeMin=N/A
+   SubmitTime=2014-05-29T16:39:49 EligibleTime=2014-05-29T16:39:49
+   StartTime=2014-05-29T16:39:50 EndTime=2014-05-29T17:39:50
+   PreemptTime=None SuspendTime=None SecsPreSuspend=0
+   Partition=small1hr AllocNode:Sid=build-wm:3315
+   ReqNodeList=(null) ExcNodeList=(null)
+   NodeList=compute-gpu-a1-001-p,compute-gpu-a1-002-p,compute-gpu-a1-003-p
+   BatchHost=compute-gpu-a1-001-p
+   NumNodes=3 NumCPUs=25 CPUs/Task=1 ReqB:S:C:T=0:0:*:*
+   Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=0
+     Nodes=compute-gpu-a1-001-p,compute-gpu-a1-002-p CPU_IDs=0-11 Mem=600
+     Nodes=compute-gpu-a1-003-p CPU_IDs=0 Mem=50
+   MinCPUsNode=1 MinMemoryCPU=50M MinTmpDiskNode=0
+   Features=(null) Gres=(null) Reservation=(null)
+   Shared=1 Contiguous=0 Licenses=(null) Network=(null)
+   Command=/home/mfel395/SLURM/jobs/mpi.sl
+   WorkDir=/home/mfel395/SLURM/jobs
+   StdErr=/home/mfel395/SLURM/jobs/slurm-10020701.out
+   StdIn=/dev/null
+   StdOut=/home/mfel395/SLURM/jobs/slurm-10020701.out
+
+
+JobId=10023075 Name=Hybrid_Job
+   UserId=mfel395(5096) GroupId=nesi(5000)
+   Priority=57 Nice=0 Account=uoa99999 QOS=normal
+   JobState=RUNNING Reason=None Dependency=(null)
+   Requeue=1 Restarts=0 BatchFlag=1 ExitCode=0:0
+   DerivedExitCode=0:0
+   RunTime=00:00:17 TimeLimit=01:00:00 TimeMin=N/A
+   SubmitTime=2014-06-05T15:13:20 EligibleTime=2014-06-05T15:13:20
+   StartTime=2014-06-05T15:13:22 EndTime=2014-06-05T16:13:22
+   PreemptTime=None SuspendTime=None SecsPreSuspend=0
+   Partition=small1hr AllocNode:Sid=build-wm:20825
+   ReqNodeList=(null) ExcNodeList=(null)
+   NodeList=compute-a1-058-p,compute-a1-059-p,compute-a1-060-p
+   BatchHost=compute-a1-058-p
+   NumNodes=3 NumCPUs=20 CPUs/Task=2 ReqB:S:C:T=0:0:*:*
+   Socks/Node=* NtasksPerN:B:S:C=0:0:*:* CoreSpec=0
+     Nodes=compute-a1-058-p CPU_IDs=0,3-5,10-11 Mem=300
+     Nodes=compute-a1-059-p CPU_IDs=0-11 Mem=600
+     Nodes=compute-a1-060-p CPU_IDs=10-11 Mem=100
+   MinCPUsNode=2 MinMemoryCPU=50M MinTmpDiskNode=0
+   Features=(null) Gres=(null) Reservation=(null)
+   Shared=1 Contiguous=0 Licenses=(null) Network=(null)
+   Command=/home/mfel395/SLURM/jobs/hybrid.sl
+   WorkDir=/home/mfel395/SLURM/jobs
+   StdErr=/home/mfel395/SLURM/jobs/slurm-10023075.out
+   StdIn=/dev/null
+   StdOut=/home/mfel395/SLURM/jobs/slurm-10023075.out
+

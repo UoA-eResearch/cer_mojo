@@ -1,0 +1,4 @@
+<machine name>|<real mem>|<free real mem>|<#cpus>|<#free cpus>|<consumable mem>|<free consumable mem>|<consumable vmem>|<free consumable vmem>|<job ids>
+
+compute-b1-010-p|129040|65069|16|7|129040|117776|131072|119808|login1-p.1515139.0,login1-p.1515485.0,login1-p.1515486.0
+

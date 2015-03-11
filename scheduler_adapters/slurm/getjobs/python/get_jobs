@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+
+import sys
+import shlex
+from subprocess import Popen, PIPE
+
+def run(command_and_args, error_on_stderr=True, error_on_nonzero_rc=True):
+  ''' run a local system call
+      behaviour on non-zero exit code or existence of stderr is controlled by the function parameters.
+  '''
+  try:
+    process = Popen(shlex.split(command_and_args), shell=False, stdout=PIPE, stderr=PIPE)
+    (stdout, stderr) = process.communicate()
+    rc = process.returncode
+  except:
+    raise Exception("failed to run '%s': %s" % (command_and_args, sys.exc_info()[1]))
+
+  if rc != 0 and error_on_nonzero_rc:
+    raise Exception('\'%s\' returned exit code %d. stderr: %s' % (command_and_args, rc, stderr))
+
+  if stderr != "" and error_on_stderr:
+    raise Exception('error running command \'%s\': Got non-empty stderr: %s' % (command_and_args, stderr))
+
+  return (stdout, stderr, rc)
+
+
+# jobid|jobstatus|userid|queue|numcores|nodes|starttime|jobdir
+
+if len(sys.argv) > 1:
+  user = sys.argv[1]
+  stdout,stderr,rc = run('squeue -o "%%i|%%t|%%u|%%P|%%C|%%N|%%S|%%Z" -u %s' % user)
+else:
+  stdout,stderr,rc = run('squeue -o "%%i|%%t|%%u|%%P|%%C|%%N|%%S|%%Z"')
+ 
+lines = stdout.splitlines()
+jobs = lines[1:]
+
+for job in jobs:
+  if '|' in job:
+    t = job.split('|')
+    date = t[6]
+    if date:
+      date = date.replace('T',' ')
+    print '%s|%s|%s|%s|%s|%s|%s|%s' % (t[0], t[1], t[2], t[3], t[4], t[5], date, t[7])
