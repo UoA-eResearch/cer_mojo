@@ -7,7 +7,7 @@
 
 job_info_msg_t *old_job_info_ptr = NULL;
 
-void load_and_print_job(uint32_t);
+void load_and_print_job(uint32_t, int, int);
 void print_job(job_info_t * job_ptr);
 int load_job(job_info_msg_t ** job_buffer_pptr, uint32_t job_id);
 void _sprint_range(char *str, uint32_t str_size, uint32_t lower, uint32_t upper);
@@ -22,12 +22,27 @@ int main (int argc, char *argv[]) {
     int i;
     char * tmp;
     uint32_t jobid = 0;
+    int array_job_id = 0;
+    int array_task_id = 0;
+    int pos, len;
     if (argc > 1) {
         printf("# jobid|username|jobstatus|queue|req_num_cores|req_mem|job_directory|submit_time|start_time|req_walltime|runtime|comma-sep list of nodes [node:cpucores:mem]\n");
         slurm_conf_init(NULL);
         for (i=1; i<argc; i++) { 
-            jobid = (uint32_t) strtol(argv[i], &tmp, 10);
-            load_and_print_job(jobid);
+            tmp = strchr(argv[i],'_');
+            if (NULL == tmp) {
+                jobid = (uint32_t) strtol(argv[i], &tmp, 10);
+            } else {
+                pos = tmp - argv[i];
+                len = strlen(argv[i]);
+                char * string_array_job_id = (char*) malloc(10);
+                char * string_array_task_id = (char*) malloc(10);
+                strncpy(string_array_job_id, argv[i], pos);
+                strncpy(string_array_task_id, argv[i]+pos+1, len-1);
+                array_job_id = (uint32_t) strtol(string_array_job_id, &tmp, 10);
+                array_task_id = (uint32_t) strtol(string_array_task_id, &tmp, 10);
+            }
+            load_and_print_job(jobid, array_job_id, array_task_id);
         }
     }
     return 0;
@@ -36,7 +51,7 @@ int main (int argc, char *argv[]) {
 /*
  * Load all jobs and print information about each job
  */
-void load_and_print_job (uint32_t jobid) {
+void load_and_print_job (uint32_t jobid, int array_job_id, int array_task_id) {
 
     int error_code = SLURM_SUCCESS, i;
     uint32_t array_id = NO_VAL;
@@ -44,18 +59,25 @@ void load_and_print_job (uint32_t jobid) {
     job_info_t *job_ptr = NULL;
     char *end_ptr = NULL;
 
-    error_code = (int) load_job(&job_buffer_ptr, jobid);
-    if (error_code) {
-        slurm_perror ("slurm_load_jobs error");
-        return;
+    if (jobid == 0) { // array job
+        error_code = (int) load_job(&job_buffer_ptr, array_job_id);
+        if (error_code) {
+            return;
+        }
+        for (i = 0, job_ptr = job_buffer_ptr->job_array; i < job_buffer_ptr->record_count; i++, job_ptr++) {
+            if (array_task_id == job_ptr->array_task_id) {
+                break;
+            }
+        }
+    } else { // normal job
+        error_code = (int) load_job(&job_buffer_ptr, jobid);
+        if (error_code) {
+            return;
+        }
+        job_ptr = &job_buffer_ptr->job_array[0];
     }
 
-    for (i = 0, job_ptr = job_buffer_ptr->job_array; i < job_buffer_ptr->record_count; i++, job_ptr++) {
-        if ((array_id != NO_VAL) && (array_id != job_ptr->array_task_id)) {
-            continue;
-        }
-        print_job(job_ptr);
-    }
+    print_job(job_ptr);
 }
 
 /*
@@ -226,3 +248,4 @@ void print_jobresources(job_info_t * job_ptr) {
         }
     }     
 }
+
