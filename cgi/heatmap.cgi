@@ -199,13 +199,19 @@ class MyHandler(xml.sax.ContentHandler):
             percent_mem = float(val.split('|')[4])
             peak_vmem = float(val.split('|')[6])
             hosts[self.hosttmp]['total_actual_load'] += percent_cpu
-            hosts[self.hosttmp]['cpusused'] += int(((percent_cpu - self.cpu_usage_threshold)/100)+1)
+            hosts[self.hosttmp]['cpusused'] += percent_cpu
             hosts[self.hosttmp]['memused_mb'] += (percent_mem * hosts[self.hosttmp]['mem_mb']) / 100
             hosts[self.hosttmp]['vmemused_mb'] += peak_vmem/1024
             if percent_cpu > self.weak_processes_lower_threshold and percent_cpu < self.weak_processes_upper_threshold:
               hosts[self.hosttmp]['num_weak_processes'] += 1
           except:
             pass
+
+  def endElement(self, name):
+    if name == "HOST" and self.hosttmp in hosts:
+      usage = hosts[self.hosttmp]['cpusused']
+      if usage:
+         hosts[self.hosttmp]['cpusused'] = int(((usage - self.cpu_usage_threshold)/100)+1)
 
 try:
   error = False
