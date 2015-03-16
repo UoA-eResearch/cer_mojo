@@ -29,28 +29,30 @@ try:
 
     # jobid|username|jobstatus|queue|req_num_cores|req_mem|job_directory|submit_time|start_time|req_walltime|runtime|comma-sep list of nodes [node:cpucores:mem]
     #   0      1         2       3        4          5         6            7            8          9          10               11
-    info += "<h2>Job details for job %s</h2>" % tokens[0]
-    info += "<table>"
-    info += "<tr><td><b>Status</b>:</td><td>%s</td></tr>" % tokens[2]
-    info += "<tr><td><b>User</b>:</td><td>%s</td></tr>" % tokens[1]
-    info += "<tr><td><b>Job Directory</b>:</td><td>%s</td></tr>" % tokens[6]
-    info += "<tr><td><b>Queue</b>:</td><td>%s</td></tr>" % tokens[3]
-    info += "<tr><td><b>Requested CPU Cores</b>:</td><td>%s</td></tr>" % tokens[4]
-    info += "<tr><td><b>Requested Memory</b>:</td><td>%s</td></tr>" % tokens[5]
-    info += "<tr><td><b>Requested Walltime [d-h:m:s]</b>:</td><td>%s</td></tr>" % tokens[9]
-    info += "<tr><td><b>Used Walltime [d-h:m:s]</b>:</td><td>%s</td></tr>" % tokens[10]
-    info += "<tr><td><b>Queued time</b>:</td><td>%s</td></tr>" % tokens[7]
-    info += "<tr><td><b>Start time</b>:</td><td>%s</td></tr>" % tokens[8]
-    info += "<tr><td><b>Execution nodes</b>:</td><td>"
-    for resources in tokens[11].split(','):
-      try:
-        node,cores,mem = resources.strip().split(':')
-      except:
-        continue
-      info += "<a href=./shownode.cgi?nodename=%s>%s</a> (CpuCores: %s, Memory: %s)<br>" % (node, node, cores, mem)
-    info += "</td></tr>"
-    info += "</table><br><hr>"
-
+    if tokens and len(tokens) > 5:
+      info += "<h2>Job details for job %s</h2>" % tokens[0]
+      info += "<table>"
+      info += "<tr><td><b>Status</b>:</td><td>%s</td></tr>" % tokens[2]
+      info += "<tr><td><b>User</b>:</td><td>%s</td></tr>" % tokens[1]
+      info += "<tr><td><b>Job Directory</b>:</td><td>%s</td></tr>" % tokens[6]
+      info += "<tr><td><b>Queue</b>:</td><td>%s</td></tr>" % tokens[3]
+      info += "<tr><td><b>Requested CPU Cores</b>:</td><td>%s</td></tr>" % tokens[4]
+      info += "<tr><td><b>Requested Memory</b>:</td><td>%s</td></tr>" % tokens[5]
+      info += "<tr><td><b>Requested Walltime [d-h:m:s]</b>:</td><td>%s</td></tr>" % tokens[9]
+      info += "<tr><td><b>Used Walltime [d-h:m:s]</b>:</td><td>%s</td></tr>" % tokens[10]
+      info += "<tr><td><b>Queued time</b>:</td><td>%s</td></tr>" % tokens[7]
+      info += "<tr><td><b>Start time</b>:</td><td>%s</td></tr>" % tokens[8]
+      info += "<tr><td><b>Execution nodes</b>:</td><td>"
+      for resources in tokens[11].split(','):
+        try:
+          node,cores,mem = resources.strip().split(':')
+        except:
+          continue
+        info += "<a href=./shownode.cgi?nodename=%s>%s</a> (CpuCores: %s, Memory: %s)<br>" % (node, node, cores, mem)
+      info += "</td></tr>"
+      info += "</table><br><hr>"
+    else:
+      info += "<b>No such job</b>"
   else:
     raise Exception('Invalid job id')
 except:
