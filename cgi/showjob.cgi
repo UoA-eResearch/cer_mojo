@@ -50,7 +50,10 @@ try:
           continue
         info += "<a href=./shownode.cgi?nodename=%s>%s</a> (CpuCores: %s, Memory: %s)<br>" % (node, node, cores, mem)
       info += "</td></tr>"
-      info += "</table><br><hr>"
+      info += "</table><br><hr><br><b>More details</b>:<br><pre>"
+      (stdout,stderr,rc) = system_call.execute('%s get_scontrol_job_output %s' % (config.scheduler_command_prefix, form['jobid'].value))
+      info += stdout 
+      info += "</pre>"
     else:
       info += "<b>No such job</b>"
   else:
