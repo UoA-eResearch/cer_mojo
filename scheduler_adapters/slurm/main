@@ -33,7 +33,7 @@ def run(command_and_args, error_on_stderr=True, error_on_nonzero_rc=True):
 
 
 
-CMDS = ['get_summary', 'get_jobs', 'get_job_details', 'get_machine_data', 'get_nodes']
+CMDS = ['get_summary', 'get_jobs', 'get_job_details', 'get_machine_data', 'get_nodes', 'get_scontrol_job_output']
 
 if 'SSH_ORIGINAL_COMMAND' in os.environ:
   cmd_and_args = os.environ['SSH_ORIGINAL_COMMAND']
