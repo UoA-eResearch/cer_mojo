@@ -367,6 +367,7 @@ print '''Content-Type: text/html
 
   <html>
   <head>
+     <meta http-equiv="Expires" content="-1">
      <link rel="stylesheet" href="/jobs/style/tablesorter/theme.default.css" type="text/css" media="print, screen"/>
      <link rel="stylesheet" href="/jobs/style/main.css" type="text/css" media="print, screen"/>
      <script type="text/javascript" src="/jobs/js/jquery-1.8.3.min.js"></script>
