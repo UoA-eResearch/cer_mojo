@@ -62,7 +62,7 @@ void print_node (node_info_t * node_ptr, job_info_msg_t * job_buffer_ptr) {
     convert_num_unit(node_ptr->real_memory, memory_str, sizeof(memory_str), UNIT_MEGA);
     // note that slurm counts cores of suspended jobs to alloc_cpus!!!!
     avail_cpus = node_ptr->cpus - alloc_cpus;
-    char * job_id_string = malloc(sizeof(char) * 2048);
+    char * job_id_string = malloc(sizeof(char) * 8192);
     job_id_string[0] = '\0';
     get_job_ids(&avail_cpus, job_id_string, node_ptr->name, job_buffer_ptr);
     printf("%s|%s|%s|%d|%d|%s\n", node_ptr->name, memory_str, free_memory_str, node_ptr->cpus, avail_cpus, job_id_string);
