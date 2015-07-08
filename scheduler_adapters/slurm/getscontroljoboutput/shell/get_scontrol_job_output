@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# remove brackets for weird array jobs
+jobid=${1/[/}
+jobid=${jobid/]/}
+
 if [ "$#" -eq 1 ]; then
-  scontrol -d show job ${1}
+  scontrol -d show job ${jobid}
 fi
