@@ -4,6 +4,7 @@
 #include "job_resources.h"
 #include "macros.h" // required for slurm_strtime
 #include "slurm_protocol_defs.h"
+#include "slurm_protocol_api.h"
 
 job_info_msg_t *old_job_info_ptr = NULL;
 
@@ -193,10 +194,10 @@ void get_memory(job_info_t * job_ptr, char * mem_str) {
     char tmp[128];
     if (job_ptr->pn_min_memory & MEM_PER_CPU) {
         job_ptr->pn_min_memory &= (~MEM_PER_CPU);
-        convert_num_unit((float)job_ptr->pn_min_memory, tmp, sizeof(tmp), UNIT_MEGA);
+        convert_num_unit((float)job_ptr->pn_min_memory, tmp, sizeof(tmp), UNIT_MEGA, CONVERT_NUM_UNIT_EXACT);
         sprintf(mem_str, "%s (per task)", tmp); 
     } else {
-        convert_num_unit((float)job_ptr->pn_min_memory, tmp, sizeof(tmp), UNIT_MEGA);
+        convert_num_unit((float)job_ptr->pn_min_memory, tmp, sizeof(tmp), UNIT_MEGA, CONVERT_NUM_UNIT_EXACT);
         sprintf(mem_str, "%s (per node)", tmp);
     }
 }
@@ -241,11 +242,10 @@ void print_jobresources(job_info_t * job_ptr) {
         }
 
         host = hostlist_shift(hl);
-        convert_num_unit(jobres->memory_allocated[rel_node_inx], tmp, sizeof(tmp), UNIT_MEGA);
+        convert_num_unit(jobres->memory_allocated[rel_node_inx], tmp, sizeof(tmp), UNIT_MEGA, CONVERT_NUM_UNIT_EXACT);
         printf("%s:%d:%s", host, core_count, tmp);
         if (rel_node_inx < jobres->nhosts-1) {
             printf(",");
         }
     }     
 }
-
