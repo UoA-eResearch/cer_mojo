@@ -58,9 +58,9 @@ void print_node (node_info_t * node_ptr, job_info_msg_t * job_buffer_ptr) {
       /* convert_num_unit apparently doesn't like negative values: a negative memory resulted in 4.00P (peta-bytes) */
       sprintf(free_memory_str, "%dM", (node_ptr->real_memory - alloc_memory));
     } else {
-      convert_num_unit((node_ptr->real_memory - alloc_memory), free_memory_str, sizeof(free_memory_str), UNIT_MEGA, CONVERT_NUM_UNIT_EXACT);
+      convert_num_unit((node_ptr->real_memory - alloc_memory), free_memory_str, sizeof(free_memory_str), UNIT_MEGA, NO_VAL, CONVERT_NUM_UNIT_EXACT);
     }
-    convert_num_unit(node_ptr->real_memory, memory_str, sizeof(memory_str), UNIT_MEGA, CONVERT_NUM_UNIT_EXACT);
+    convert_num_unit(node_ptr->real_memory, memory_str, sizeof(memory_str), UNIT_MEGA, NO_VAL, CONVERT_NUM_UNIT_EXACT);
     // note that slurm counts cores of suspended jobs to alloc_cpus!!!!
     avail_cpus = node_ptr->cpus - alloc_cpus;
     char * job_id_string = malloc(sizeof(char) * 65536);
